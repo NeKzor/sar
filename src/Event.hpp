@@ -46,6 +46,8 @@ namespace Event {
 		TAS_START,
 		TAS_END,
 		MAYBE_AUTOSUBMIT,
+		RENDERER_START,
+		RENDERER_FINISH,
 	};
 
 	template <EventType E>
