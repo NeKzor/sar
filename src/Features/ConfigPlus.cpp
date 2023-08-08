@@ -808,6 +808,8 @@ MK_SAR_ON(tas_start, "when TAS script playback starts", true)
 MK_SAR_ON(tas_end, "when TAS script playback ends", true)
 MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 MK_SAR_ON(not_pb, "when auto-submitter detects not PB", true)
+MK_SAR_ON(renderer_start, "when renderer starts", true)
+MK_SAR_ON(renderer_finish, "when renderer finishes", true)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -849,6 +851,12 @@ ON_EVENT(TAS_END) {
 ON_EVENT(MAYBE_AUTOSUBMIT) {
 	if (event.pb) RUN_EXECS(pb);
 	else RUN_EXECS(not_pb);
+}
+ON_EVENT(RENDERER_START) {
+	RUN_EXECS(renderer_start);
+}
+ON_EVENT(RENDERER_FINISH) {
+	RUN_EXECS(renderer_finish);
 }
 
 struct Seq {
