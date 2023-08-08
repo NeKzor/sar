@@ -23,11 +23,13 @@ typedef bool (*GetSymbolProc_t)(const char *key);
 class KeyValues {
 public:
 	KeyValues(const char *name);
-	~KeyValues();
+	~KeyValues() = delete;
 	KeyValues *FindKey(const char *name, bool create = true);
 	void SetInt(const char *key, int val);
 	void SetString(const char *key, const char *val);
 	const char *GetName();
+	void *operator new(std::size_t iAllocSize);
+	void operator delete(void *pMem);
 
 	enum class Type : char {
 		NONE = 0,
