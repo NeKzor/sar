@@ -118,6 +118,14 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 					this->features->AddFeature<WorkshopList>(&workshop);
 				}
 
+				if (this->game->Is(SourceGame_PortalStoriesMel)) {
+					this->features->AddFeature<ChapterMenu>(&chapterMenu);
+					this->features->AddFeature<ChallengeMode>(&cm);
+
+					cm->LoadNodes(this->game->GetVersion());
+					chapterMenu->LoadMaps(this->game->GetVersion());
+				}
+
 				if (listener) {
 					listener->Init();
 				}
@@ -169,8 +177,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 	return false;
 }
 
-// SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
-// This is a race condition though
 bool SAR::GetPlugin() {
 	auto s_ServerPlugin = reinterpret_cast<uintptr_t>(engine->s_ServerPlugin->ThisPtr());
 	auto m_Size = *reinterpret_cast<int *>(s_ServerPlugin + CServerPlugin_m_Size);
@@ -188,15 +194,6 @@ bool SAR::GetPlugin() {
 	return false;
 }
 void SAR::SearchPlugin() {
-	this->findPluginThread = std::thread([this]() {
-		GO_THE_FUCK_TO_SLEEP(1000);
-		if (this->GetPlugin()) {
-			this->plugin->ptr->m_bDisable = true;
-		} else {
-			console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
-		}
-	});
-	this->findPluginThread.detach();
 }
 
 void SAR::Unload() {
@@ -306,7 +303,6 @@ CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered command
 	sar.Unload();
 }
 
-#pragma region Unused callbacks
 void SAR::Pause() {
 }
 void SAR::UnPause() {
@@ -317,6 +313,9 @@ const char *SAR::GetPluginDescription() {
 void SAR::LevelInit(char const *pMapName) {
 }
 void SAR::ServerActivate(void *pEdictList, int edictCount, int clientMax) {
+	if (cm) {
+		cm->ReloadNodes();
+	}
 }
 void SAR::GameFrame(bool simulating) {
 }
@@ -349,4 +348,3 @@ void SAR::OnEdictAllocated(void *edict) {
 }
 void SAR::OnEdictFreed(const void *edict) {
 }
-#pragma endregion

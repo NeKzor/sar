@@ -636,6 +636,18 @@ bool Client::Init() {
 #endif
 	}
 
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+#ifdef _WIN32
+		auto g_ChapterContextNamesAddr = Memory::Scan(this->Name(), "55 8B EC 8B 4D 08 81 EC ? ? ? ? 56 68 ? ? ? ? 8D 85 ? ? ? ? 50 51 E8 ? ? ? ? 33 F6", 38);
+#else
+		//auto g_ChapterContextNamesAddr = Memory::Scan(this->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 0F B6 05 ? ? ? ? 84 C0 75 ? 83 EC ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 85 C0 0F 85 ? ? ? ? 8B 15", 52);
+		auto g_ChapterContextNamesAddr = Memory::Scan(this->Name(), "55 89 E5 83 EC ? 8B 15 ? ? ? ? 8B 4D", 8);
+#endif
+		if (g_ChapterContextNamesAddr) {
+			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t*>(g_ChapterContextNamesAddr);
+		}
+	}
+
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");

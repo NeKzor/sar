@@ -2,7 +2,7 @@
 #include "Modules/Tier1.hpp"
 #include "Utils/SDK.hpp"
 
-#define DECL_CVAR_CALLBACK(name) void name##_callback(void *var, const char *pOldValue, float flOldValue)
+#define DECL_CVAR_CALLBACK(name) void name##_callback(IConVar *var, const char *pOldValue, float flOldValue)
 #define CVAR_HOOK_AND_CALLBACK(name) \
 	name = Variable(#name);             \
 	name.AddCallBack(&name##_callback)

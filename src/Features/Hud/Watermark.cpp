@@ -18,7 +18,7 @@ public:
 	}
 
 	bool ShouldDraw() override {
-		return !engine->demoplayer->IsPlaying();
+		return false;
 	}
 
 	bool GetCurrentSize(int &w, int &h) override {

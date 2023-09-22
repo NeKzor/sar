@@ -15,8 +15,9 @@
 
 struct CCommand;
 struct ConCommandBase;
+class IConVar;
 
-typedef void (*FnChangeCallback_t)(void *var, const char *pOldValue, float flOldValue);
+typedef void (*FnChangeCallback_t)(IConVar *var, const char *pOldValue, float flOldValue);
 
 using _CommandCallback = void (*)(const CCommand &args);
 using _CommandCompletionCallback = int (*)(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);

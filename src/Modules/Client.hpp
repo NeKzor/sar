@@ -53,6 +53,8 @@ public:
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 
+	ChapterContextData_t* g_ChapterContextNames;
+
 	std::string lastLevelName;
 	void **gamerules;
 

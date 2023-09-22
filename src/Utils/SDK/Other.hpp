@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <cstring>
 
-
 struct cmdalias_t {
 	cmdalias_t *next;
 	char name[32];
@@ -83,4 +82,61 @@ public:
 	void *vtable;
 	void *m_hTonemapController;
 	QAngle v_angle;
+};
+
+struct ChallengeNodeData_t {
+    const char* m_szMapName;
+    Vector m_vecNodeOrigin;
+    QAngle m_vecNodeAngles;
+};
+
+struct ChapterContextData_t {
+    const char* m_szMapName;
+    int m_nChapter;
+    int m_nSubChapter;
+};
+
+class CBotCmd;
+
+class IPlayerInfo {
+public:
+    virtual const char* GetName() = 0;
+    virtual int GetUserID() = 0;
+    virtual const char* GetNetworkIDString() = 0;
+    virtual int GetTeamIndex() = 0;
+    virtual void ChangeTeam(int iTeamNum) = 0;
+    virtual int GetFragCount() = 0;
+    virtual int GetDeathCount() = 0;
+    virtual bool IsConnected() = 0;
+    virtual int GetArmorValue() = 0;
+    virtual bool IsHLTV() = 0;
+    virtual bool IsPlayer() = 0;
+    virtual bool IsFakeClient() = 0;
+    virtual bool IsDead() = 0;
+    virtual bool IsInAVehicle() = 0;
+    virtual bool IsObserver() = 0;
+    virtual const Vector GetAbsOrigin() = 0;
+    virtual const QAngle GetAbsAngles() = 0;
+    virtual const Vector GetPlayerMins() = 0;
+    virtual const Vector GetPlayerMaxs() = 0;
+    virtual const char* GetWeaponName() = 0;
+    virtual const char* GetModelName() = 0;
+    virtual const int GetHealth() = 0;
+    virtual const int GetMaxHealth() = 0;
+    virtual CBotCmd GetLastUserCommand() = 0;
+};
+
+class IPlayerInfoManager
+{
+public:
+    virtual IPlayerInfo* GetPlayerInfo(edict_t * pEdict) = 0;
+    virtual CGlobalVars* GetGlobalVars() = 0;
+};
+
+struct PortalPlayerStatistics_t {
+    void* unk;
+    int iNumPortalsPlaced;
+    int iNumStepsTaken;
+    float fNumSecondsTaken;
+    float fDistanceTaken;
 };

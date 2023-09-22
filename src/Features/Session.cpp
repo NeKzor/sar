@@ -107,7 +107,7 @@ void Session::Ended() {
 
 	engine->isLevelTransition |= engine->IsOrange();
 	if (engine->tickLoadStarted != -1) engine->tickLoadStarted = -2;
-	Event::Trigger<Event::SESSION_END>({ engine->isLevelTransition, engine->tickLoadStarted == -2 });
+	Event::Trigger<Event::SESSION_END>({ engine->isLevelTransition, engine->tickLoadStarted == -2, engine->ToTime(tick) });
 
 	if (tick != 0) {
 		console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));

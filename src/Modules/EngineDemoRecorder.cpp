@@ -423,52 +423,7 @@ ON_EVENT(CM_FLAGS) {
 	if (engine->demorecorder->isRecordingDemo && event.end) {
 		char data[2] = {0x06, (char)event.slot};
 		engine->demorecorder->RecordData(data, sizeof data);
-
-		Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
-			if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
-			if (sar_challenge_autostop.GetInt() > 0) {
-				std::string demoFile = engine->demorecorder->GetDemoFilename();
-
-				engine->demorecorder->Stop();
-
-				std::optional<std::string> rename_if_pb = {};
-				std::optional<std::string> replay_append_if_pb = {};
-
-				if (sar_challenge_autostop.GetInt() == 2 || sar_challenge_autostop.GetInt() == 3) {
-					unsigned total = floor(event.time * 100);
-					unsigned cs = total % 100;
-					total /= 100;
-					unsigned secs = total % 60;
-					total /= 60;
-					unsigned mins = total % 60;
-					total /= 60;
-					unsigned hrs = total;
-
-					std::string time;
-
-					if (hrs) {
-						time = Utils::ssprintf("%d-%02d-%02d-%02d", hrs, mins, secs, cs);
-					} else if (mins) {
-						time = Utils::ssprintf("%d-%02d-%02d", mins, secs, cs);
-					} else {
-						time = Utils::ssprintf("%d-%02d", secs, cs);
-					}
-
-					auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
-					if (sar_challenge_autostop.GetInt() == 2) {
-						std::filesystem::rename(demoFile, newName);
-						demoFile = newName;
-						engine->demoplayer->replayName += "_";
-						engine->demoplayer->replayName += time;
-					} else { // autostop 3
-						rename_if_pb = newName;
-						replay_append_if_pb = std::string("_") + time;
-					}
-				}
-
-				AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
-			}
-		});
+		AutoSubmit::SubmitRun(event.time);
 	}
 }
 

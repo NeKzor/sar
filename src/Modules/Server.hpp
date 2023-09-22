@@ -32,6 +32,7 @@ public:
 	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t value, int outputID);
 #endif
 
+	using _Create = void*(__cdecl*)(const char* szName, const Vector& vecOrigin, const QAngle& vecAngles, void* pOwner);
 	using _CreateEntityByName = void *(__rescall *)(void *, const char *);
 	using _DispatchSpawn = void(__rescall *)(void *, void *);
 	using _SetKeyValueChar = bool(__rescall *)(void *, void *, const char *, const char *);
@@ -41,6 +42,7 @@ public:
 	_UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
 	_GetAllServerClasses GetAllServerClasses = nullptr;
 	_IsRestoring IsRestoring = nullptr;
+	_Create Create = nullptr;
 	_CreateEntityByName CreateEntityByName = nullptr;
 	_DispatchSpawn DispatchSpawn = nullptr;
 	_SetKeyValueChar SetKeyValueChar = nullptr;
@@ -52,6 +54,10 @@ public:
 
 	CGlobalVars *gpGlobals = nullptr;
 	CEntInfo *m_EntPtrArray = nullptr;
+
+	ChallengeNodeData_t* g_ChallengeNodeData = nullptr;
+    IPlayerInfoManager* s_PlayerInfoManager = nullptr;
+	typedescription_t* onLevelEndDesc = nullptr;
 
 	int tickCount = 0;
 
@@ -74,6 +80,7 @@ public:
 	DECL_M(GetEntityName, char *);
 	DECL_M(GetEntityClassName, char *);
 	DECL_M(GetPlayerState, CPlayerState);
+	DECL_M(GetStats, PortalPlayerStatistics_t);
 
 	ServerEnt *GetPlayer(int index);
 	bool IsPlayer(void *entity);
@@ -98,7 +105,11 @@ public:
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);
 
+	// CChallengeModeEndNode::StartTouch
 	DECL_DETOUR(StartTouchChallengeNode, void *entity);
+
+	// CPortalStatsController::OnLevelEnd
+    DECL_DETOUR(OnLevelEnd, inputdata_t& data);
 
 	// CGameMovement::CheckJumpButton
 	DECL_DETOUR_T(bool, CheckJumpButton);

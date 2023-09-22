@@ -4,6 +4,7 @@
 #include "Engine.hpp"
 #include "Event.hpp"
 #include "Features/Camera.hpp"
+#include "Features/ChallengeMode.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
@@ -76,6 +77,7 @@ REDECL(Server::IsInPVS);
 REDECL(Server::ProcessMovement);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
+REDECL(Server::OnLevelEnd);
 REDECL(Server::say_callback);
 
 SMDECL(Server::GetPortals, int, iNumPortalsPlaced);
@@ -91,6 +93,7 @@ SMDECL(Server::GetPortalLocal, CPortalPlayerLocalData, m_PortalLocal);
 SMDECL(Server::GetEntityName, char *, m_iName);
 SMDECL(Server::GetEntityClassName, char *, m_iClassname);
 SMDECL(Server::GetPlayerState, CPlayerState, pl);
+SMDECL(Server::GetStats, PortalPlayerStatistics_t, m_StatsThisLevel);
 
 ServerEnt *Server::GetPlayer(int index) {
 	return this->UTIL_PlayerByIndex(index);
@@ -714,6 +717,7 @@ static void *g_check_stuck_code;
 bool Server::Init() {
 	this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
 	this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL005");
+	this->s_PlayerInfoManager = Interface::Get<IPlayerInfoManager*>(this->Name(), "PlayerInfoManager002");
 
 	if (this->g_GameMovement) {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
@@ -890,6 +894,24 @@ bool Server::Init() {
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+#ifdef _WIN32
+		auto g_ChallengeNodeDataAddr = Memory::Scan(this->Name(), "55 8B EC 53 56 33 DB BE ? ? ? ? 8D 64 24 00", 8);
+#else
+		//auto g_ChallengeNodeDataAddr = Memory::Scan(this->Name(), "83 EC ? 6A ? E8 ? ? ? ? 83 C4 ? C7 05 ? ? ? ? ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 83 EC ? 8B 10 68 ? ? ? ? 68 ? ? ? ? 50 FF 12 58 5A 68 ? ? ? ? 68 ? ? ? ? E8", 121);
+		auto g_ChallengeNodeDataAddr = Memory::Scan(this->Name(), "55 0F 57 C0 89 E5 83 EC ? F3 0F 11 05 ? ? ? ? F3 0F 10 0D ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 45 ? F3 0F 11 05 ? ? ? ? F3 0F 11 0D ? ? ? ? F3 0F 11 0D ? ? ? ? F3 0F 11 05", 276);
+#endif
+		if (g_ChallengeNodeDataAddr) {
+			this->g_ChallengeNodeData = Memory::Deref<ChallengeNodeData_t*>(g_ChallengeNodeDataAddr);
+		}
+
+		auto fire_rocket_projectile = Command("fire_rocket_projectile");
+		if (!!fire_rocket_projectile) {
+			auto callback = uintptr_t(fire_rocket_projectile.ThisPtr()->m_fnCommandCallback);
+			this->Create = Memory::Read<_Create>(callback + Offsets::CBaseEntity_Create);
+		}
+	}
+
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");
 	sv_alternateticks = Variable("sv_alternateticks");
@@ -945,6 +967,10 @@ void Server::Shutdown() {
 	Interface::Delete(this->gEntList);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
+
+    if (this->onLevelEndDesc) {
+        onLevelEndDesc->inputFunc = reinterpret_cast<inputfunc_t>(Server::OnLevelEnd);
+    }
 }
 
 Server *server;

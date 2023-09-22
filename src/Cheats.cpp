@@ -47,6 +47,16 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 
+void sar_challenge_mode_callback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+	if (!std::strcmp(pOldValue, "0")) {
+		sv_bonus_challenge.SetValue(1);
+	} else {
+		sv_bonus_challenge.SetValue(0);
+	}
+}
+Variable sar_challenge_mode("sar_challenge_mode", "0", 0, 1, "Enables challenge mode.\n", FCVAR_DONTRECORD);
+
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
 Variable ui_loadingscreen_fadein_time;
@@ -297,13 +307,29 @@ void Cheats::Init() {
 
 	sar_fix_reloaded_cheats.UniqueFor(SourceGame_PortalReloaded);
 
+	sar_challenge_mode.UniqueFor(SourceGame_PortalStoriesMel);
+
 	cvars->Unlock();
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("setmodel").RemoveFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
+	}
 
 	Variable::RegisterAll();
 	Command::RegisterAll();
+
+	sar_challenge_mode.AddCallBack(sar_challenge_mode_callback);
 }
 void Cheats::Shutdown() {
 	cvars->Lock();
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("setmodel").AddFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").AddFlag(FCVAR_CHEAT);
+	}
 
 	Variable::UnregisterAll();
 	Command::UnregisterAll();

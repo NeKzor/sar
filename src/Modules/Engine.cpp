@@ -8,6 +8,7 @@
 #include "InputSystem.hpp"
 #include "Features/AchievementTracker.hpp"
 #include "Features/Camera.hpp"
+#include "Features/ChallengeMode.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
@@ -324,6 +325,7 @@ DETOUR(Engine::SetSignonState, int state, int count, void *unk) {
 		engine->GetTicks(host, server, client);
 		console->Print("CClientState::SetSignonState %d (host=%d server=%d client=%d)\n", state, host, server, client);
 	}
+
 	auto ret = Engine::SetSignonState(thisptr, state, count, unk);
 	session->Changed(state);
 	return ret;
@@ -481,7 +483,6 @@ DETOUR_COMMAND(Engine::plugin_load) {
 		auto file = std::string(args[1]);
 		if (Utils::EndsWith(file, std::string(MODULE("sar"))) || Utils::EndsWith(file, std::string("sar"))) {
 			if (sar.GetPlugin()) {
-				sar.plugin->ptr->m_bDisable = true;
 				console->PrintActive("SAR: Plugin fully loaded!\n");
 			}
 			return;

@@ -1,8 +1,10 @@
 #include "AutoSubmit.hpp"
+#include "Cheats.hpp"
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/Session.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
@@ -15,12 +17,13 @@
 #include <filesystem>
 #include <curl/curl.h>
 
-#define API_BASE "https://board.portal2.sr/api-v2"
 #define AUTOSUBMIT_TOAST_TAG "autosubmit"
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
-#define API_KEY_FILE "autosubmit_key.txt"
+#define API_KEY_FILE "autosubmit.key"
 
 static std::string g_partner_name;
+static bool g_cheated = false;
+//static bool g_challenge_mode = false;
 
 ON_EVENT(SESSION_START) {
 	if (engine->IsCoop()) {
@@ -28,7 +31,15 @@ ON_EVENT(SESSION_START) {
 		NetMessage::SendMsg(COOP_NAME_MESSAGE_TYPE, name, strlen(name));
 	}
 	g_partner_name = "(unknown partner)";
+	g_cheated = sv_cheats.GetBool();
+	//g_challenge_mode = !sv_cheats.GetBool() && sar_challenge_mode.GetBool();
 }
+
+// ON_EVENT(SESSION_END) {
+// 	if (g_challenge_mode) {
+// 		AutoSubmit::SubmitRun(event.time);
+// 	}
+// }
 
 ON_INIT {
 	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) {
@@ -36,145 +47,17 @@ ON_INIT {
 	});
 }
 
-static bool g_cheated = false;
-
-ON_EVENT(SESSION_START) {
-	g_cheated = sv_cheats.GetBool();
-}
-
 ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) g_cheated = true;
 }
 
+static std::string g_api_base;
 static std::string g_api_key;
 static bool g_key_valid;
 static CURL *g_curl;
 static std::thread g_worker;
 
-static std::map<std::string, const char *> g_map_ids = {
-	{ "sp_a1_intro1",  "62761" },
-	{ "sp_a1_intro2",  "62758" },
-	{ "sp_a1_intro3",  "47458" },
-	{ "sp_a1_intro4",  "47455" },
-	{ "sp_a1_intro5",  "47452" },
-	{ "sp_a1_intro6",  "47106" },
-	{ "sp_a1_intro7",  "62763" },
-	{ "sp_a1_wakeup",  "62759" },
-	{ "sp_a2_intro",   "47735" },
-
-	{ "sp_a2_laser_intro",     "62765" },
-	{ "sp_a2_laser_stairs",    "47736" },
-	{ "sp_a2_dual_lasers",     "47738" },
-	{ "sp_a2_laser_over_goo",  "47742" },
-	{ "sp_a2_catapult_intro",  "62767" },
-	{ "sp_a2_trust_fling",     "47744" },
-	{ "sp_a2_pit_flings",      "47465" },
-	{ "sp_a2_fizzler_intro",   "47746" },
-
-	{ "sp_a2_sphere_peek",      "47748" },
-	{ "sp_a2_ricochet",         "47751" },
-	{ "sp_a2_bridge_intro",     "47752" },
-	{ "sp_a2_bridge_the_gap",   "47755" },
-	{ "sp_a2_turret_intro",     "47756" },
-	{ "sp_a2_laser_relays",     "47759" },
-	{ "sp_a2_turret_blocker",   "47760" },
-	{ "sp_a2_laser_vs_turret",  "47763" },
-	{ "sp_a2_pull_the_rug",     "47764" },
-
-	{ "sp_a2_column_blocker",  "47766" },
-	{ "sp_a2_laser_chaining",  "47768" },
-	{ "sp_a2_triple_laser",    "47770" },
-	{ "sp_a2_bts1",            "47773" },
-	{ "sp_a2_bts2",            "47774" },
-
-	{ "sp_a2_bts3",  "47776" },
-	{ "sp_a2_bts4",  "47779" },
-	{ "sp_a2_bts5",  "47780" },
-	{ "sp_a2_core",  "62771" },
-
-	{ "sp_a3_01",            "47783" },
-	{ "sp_a3_03",            "47784" },
-	{ "sp_a3_jump_intro",    "47787" },
-	{ "sp_a3_bomb_flings",   "47468" },
-	{ "sp_a3_crazy_box",     "47469" },
-	{ "sp_a3_transition01",  "47472" },
-
-	{ "sp_a3_speed_ramp",    "47791" },
-	{ "sp_a3_speed_flings",  "47793" },
-	{ "sp_a3_portal_intro",  "47795" },
-	{ "sp_a3_end",           "47798" },
-
-	{ "sp_a4_intro",           "88350" },
-	{ "sp_a4_tb_intro",        "47800" },
-	{ "sp_a4_tb_trust_drop",   "47802" },
-	{ "sp_a4_tb_wall_button",  "47804" },
-	{ "sp_a4_tb_polarity",     "47806" },
-	{ "sp_a4_tb_catch",        "47808" },
-	{ "sp_a4_stop_the_box",    "47811" },
-	{ "sp_a4_laser_catapult",  "47813" },
-	{ "sp_a4_laser_platform",  "47815" },
-	{ "sp_a4_speed_tb_catch",  "47817" },
-	{ "sp_a4_jump_polarity",   "47819" },
-
-	{ "sp_a4_finale1",  "62776" },
-	{ "sp_a4_finale2",  "47821" },
-	{ "sp_a4_finale3",  "47824" },
-	{ "sp_a4_finale4",  "47456" },
-
-	{ "mp_coop_doors",          "47741" },
-	{ "mp_coop_race_2",         "47825" },
-	{ "mp_coop_laser_2",        "47828" },
-	{ "mp_coop_rat_maze",       "47829" },
-	{ "mp_coop_laser_crusher",  "45467" },
-	{ "mp_coop_teambts",        "46362" },
-
-	{ "mp_coop_fling_3",            "47831" },
-	{ "mp_coop_infinifling_train",  "47833" },
-	{ "mp_coop_come_along",         "47835" },
-	{ "mp_coop_fling_1",            "47837" },
-	{ "mp_coop_catapult_1",         "47840" },
-	{ "mp_coop_multifling_1",       "47841" },
-	{ "mp_coop_fling_crushers",     "47844" },
-	{ "mp_coop_fan",                "47845" },
-
-	{ "mp_coop_wall_intro",           "47848" },
-	{ "mp_coop_wall_2",               "47849" },
-	{ "mp_coop_catapult_wall_intro",  "47854" },
-	{ "mp_coop_wall_block",           "47856" },
-	{ "mp_coop_catapult_2",           "47858" },
-	{ "mp_coop_turret_walls",         "47861" },
-	{ "mp_coop_turret_ball",          "52642" },
-	{ "mp_coop_wall_5",               "52660" },
-
-	{ "mp_coop_tbeam_redirect",       "52662" },
-	{ "mp_coop_tbeam_drill",          "52663" },
-	{ "mp_coop_tbeam_catch_grind_1",  "52665" },
-	{ "mp_coop_tbeam_laser_1",        "52667" },
-	{ "mp_coop_tbeam_polarity",       "52671" },
-	{ "mp_coop_tbeam_polarity2",      "52687" },
-	{ "mp_coop_tbeam_polarity3",      "52689" },
-	{ "mp_coop_tbeam_maze",           "52691" },
-	{ "mp_coop_tbeam_end",            "52777" },
-
-	{ "mp_coop_paint_come_along",      "52694" },
-	{ "mp_coop_paint_redirect",        "52711" },
-	{ "mp_coop_paint_bridge",          "52714" },
-	{ "mp_coop_paint_walljumps",       "52715" },
-	{ "mp_coop_paint_speed_fling",     "52717" },
-	{ "mp_coop_paint_red_racer",       "52735" },
-	{ "mp_coop_paint_speed_catch",     "52738" },
-	{ "mp_coop_paint_longjump_intro",  "52740" },
-
-	{ "mp_coop_separation_1",      "49341" },
-	{ "mp_coop_tripleaxis",        "49343" },
-	{ "mp_coop_catapult_catch",    "49345" },
-	{ "mp_coop_2paints_1bridge",   "49347" },
-	{ "mp_coop_paint_conversion",  "49349" },
-	{ "mp_coop_bridge_catch",      "49351" },
-	{ "mp_coop_laser_tbeam",       "52757" },
-	{ "mp_coop_paint_rat_maze",    "52759" },
-	{ "mp_coop_paint_crazy_box",   "48287" },
-};
+static std::map<std::string, std::string> g_map_ids = {};
 
 static bool ensureCurlReady() {
 	if (!g_curl) {
@@ -188,8 +71,8 @@ static bool ensureCurlReady() {
 	return true;
 }
 
-static std::optional<std::string> request(const char *url) {
-	curl_easy_setopt(g_curl, CURLOPT_URL, url);
+static std::optional<std::string> request(std::string url) {
+	curl_easy_setopt(g_curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(g_curl, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(g_curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, 30);
@@ -212,7 +95,7 @@ static std::optional<std::string> request(const char *url) {
 	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
 
 	if (res != CURLE_OK) {
-		THREAD_PRINT("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url, curl_easy_strerror(res));
+		THREAD_PRINT("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url.c_str(), curl_easy_strerror(res));
 	}
 
 	return res == CURLE_OK && code == 200 ? response : std::optional<std::string>{};
@@ -233,19 +116,42 @@ static void testApiKey() {
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto response = request(API_BASE"/validate-user");
+	auto response = request(g_api_base + "/validate-user");
 
 	curl_mime_free(form);
 
 	if (!response) {
 		THREAD_PRINT("API key invalid!\n");
-	} else {
-		g_key_valid = true;
-		THREAD_PRINT("API key valid!\n");
+		return;
 	}
+
+	g_key_valid = true;
+	THREAD_PRINT("API key valid!\n");
+
+	response = request(g_api_base + "/download-maps");
+	if (!response) {
+		THREAD_PRINT("Failed to downloaded maps!\n");
+		return;
+	}
+
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+
+	if (err != "") {
+		return;
+	}
+
+	for (auto map : json["maps"].array_items()) {
+		g_map_ids.insert({
+			map["level_name"].string_value(),
+			map["id"].string_value()
+		});
+	}
+
+	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
 }
 
-static std::optional<int> getCurrentPbScore(const char *map_id) {
+static std::optional<int> getCurrentPbScore(std::string& map_id) {
 	if (!ensureCurlReady()) return {};
 
 	curl_mime *form = curl_mime_init(g_curl);
@@ -257,11 +163,11 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "mapId");
-	curl_mime_data(field, map_id, CURL_ZERO_TERMINATED);
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto response = request(API_BASE"/current-pb");
+	auto response = request(g_api_base + "/current-pb");
 
 	curl_mime_free(form);
 
@@ -282,7 +188,7 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 	return atoi(str.c_str());
 }
 
-static void submitTime(int score, std::string demopath, bool coop, const char *map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
+static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	auto score_str = std::to_string(score);
 
 	if (!g_key_valid) {
@@ -341,7 +247,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "mapId");
-	curl_mime_data(field, map_id, CURL_ZERO_TERMINATED);
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "score");
@@ -359,7 +265,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto resp = request(API_BASE"/auto-submit");
+	auto resp = request(g_api_base + "/auto-submit");
 
 	curl_mime_free(form);
 
@@ -378,12 +284,12 @@ static void loadApiKey(bool output_nonexist) {
 		return;
 	}
 
+	std::string base;
 	std::string key;
+
 	{
 		std::ifstream f(API_KEY_FILE);
-		std::stringstream buf;
-		buf << f.rdbuf();
-		key = buf.str();
+		std::getline(f, base) && std::getline(f, key);
 	}
 
 	key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
@@ -401,6 +307,7 @@ static void loadApiKey(bool output_nonexist) {
 		return;
 	}
 
+	g_api_base = "https://" + base + "/api-v2";
 	g_api_key = key;
 	g_key_valid = false;
 	console->Print("Set API key! Testing...\n");
@@ -421,6 +328,54 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 	loadApiKey(true);
 }
 
+void AutoSubmit::SubmitRun(float final_time) {
+	Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
+		if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
+		if (sar_challenge_autostop.GetInt() > 0) {
+			std::string demoFile = engine->demorecorder->GetDemoFilename();
+
+			engine->demorecorder->Stop();
+
+			std::optional<std::string> rename_if_pb = {};
+			std::optional<std::string> replay_append_if_pb = {};
+
+			if (sar_challenge_autostop.GetInt() == 2 || sar_challenge_autostop.GetInt() == 3) {
+				unsigned total = floor(final_time * 100);
+				unsigned cs = total % 100;
+				total /= 100;
+				unsigned secs = total % 60;
+				total /= 60;
+				unsigned mins = total % 60;
+				total /= 60;
+				unsigned hrs = total;
+
+				std::string time;
+
+				if (hrs) {
+					time = Utils::ssprintf("%d-%02d-%02d-%02d", hrs, mins, secs, cs);
+				} else if (mins) {
+					time = Utils::ssprintf("%d-%02d-%02d", mins, secs, cs);
+				} else {
+					time = Utils::ssprintf("%d-%02d", secs, cs);
+				}
+
+				auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
+				if (sar_challenge_autostop.GetInt() == 2) {
+					std::filesystem::rename(demoFile, newName);
+					demoFile = newName;
+					engine->demoplayer->replayName += "_";
+					engine->demoplayer->replayName += time;
+				} else { // autostop 3
+					rename_if_pb = newName;
+					replay_append_if_pb = std::string("_") + time;
+				}
+			}
+
+			AutoSubmit::FinishRun(final_time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
+		}
+	});
+}
+
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	if (g_cheated) {
 		console->Print("Cheated; not autosubmitting\n");
@@ -439,7 +394,7 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}
 
-	const char *map_id = it->second;
+	auto map_id = it->second;
 
 	int score = floor(final_time * 100);
 

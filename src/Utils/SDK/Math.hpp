@@ -100,6 +100,10 @@ struct Vector {
 
 struct QAngle {
 	float x, y, z;
+
+	inline bool operator==(const QAngle ang) const {
+		return x == ang.x && y == ang.y && z == ang.z;
+	}
 };
 
 inline QAngle VectorToQAngle(const Vector &v) {

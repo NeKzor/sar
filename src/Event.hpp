@@ -61,6 +61,7 @@ namespace Event {
 	struct EventData<SESSION_END> {
 		bool transition;
 		bool load;
+		float time;
 	};
 	template <>
 	struct EventData<PRE_TICK> {

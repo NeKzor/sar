@@ -12,6 +12,11 @@ struct PlayerStats {
 	JumpStats *jumps;
 	StepStats *steps;
 	VelocityStats *velocity;
+    int totalJumps = 0;
+    int totalSteps = 0;
+    int totalGives = 0;
+    bool wOnly = true;
+    bool mouseless = true;
 
 	PlayerStats()
 		: jumps(new JumpStats())
@@ -22,6 +27,9 @@ struct PlayerStats {
 		this->jumps->Reset();
 		this->steps->Reset();
 		this->velocity->Reset();
+        this->totalJumps = 0;
+        this->totalSteps = 0;
+        this->totalGives = 0;
 	}
 	~PlayerStats() {
 		SAFE_DELETE(this->jumps);
