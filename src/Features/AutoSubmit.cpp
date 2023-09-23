@@ -77,6 +77,10 @@ static std::optional<std::string> request(std::string url) {
 	curl_easy_setopt(g_curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, 30);
 
+#ifdef UNSAFELY_IGNORE_CERTIFICATE_ERROR
+	curl_easy_setopt(g_curl, CURLOPT_SSL_VERIFYPEER, 0);
+#endif
+
 	curl_easy_setopt(
 		g_curl,
 		CURLOPT_WRITEFUNCTION,
