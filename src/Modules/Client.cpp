@@ -636,7 +636,7 @@ bool Client::Init() {
 #endif
 	}
 
-	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag)) {
 #ifdef _WIN32
 		auto g_ChapterContextNamesAddr = Memory::Scan(this->Name(), "55 8B EC 8B 4D 08 81 EC ? ? ? ? 56 68 ? ? ? ? 8D 85 ? ? ? ? 50 51 E8 ? ? ? ? 33 F6", 38);
 #else

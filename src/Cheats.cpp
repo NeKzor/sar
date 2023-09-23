@@ -51,8 +51,10 @@ void sar_challenge_mode_callback(IConVar *var, const char *pOldValue, float flOl
 {
 	if (!std::strcmp(pOldValue, "0")) {
 		sv_bonus_challenge.SetValue(1);
+		Variable("map_wants_save_disable").SetValue(1);
 	} else {
 		sv_bonus_challenge.SetValue(0);
+		Variable("map_wants_save_disable").SetValue(0);
 	}
 }
 Variable sar_challenge_mode("sar_challenge_mode", "0", 0, 1, "Enables challenge mode.\n", FCVAR_DONTRECORD);
@@ -307,7 +309,7 @@ void Cheats::Init() {
 
 	sar_fix_reloaded_cheats.UniqueFor(SourceGame_PortalReloaded);
 
-	sar_challenge_mode.UniqueFor(SourceGame_PortalStoriesMel);
+	sar_challenge_mode.UniqueFor(SourceGame_PortalStoriesMel | SourceGame_ApertureTag);
 
 	cvars->Unlock();
 
