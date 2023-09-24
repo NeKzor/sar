@@ -118,7 +118,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 					this->features->AddFeature<WorkshopList>(&workshop);
 				}
 
-				if (this->game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag)) {
+				if (this->game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag | SourceGame_PortalReloaded | SourceGame_ThinkingWithTimeMachine)) {
 					this->features->AddFeature<ChapterMenu>(&chapterMenu);
 					this->features->AddFeature<ChallengeMode>(&cm);
 

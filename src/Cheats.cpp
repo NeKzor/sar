@@ -47,14 +47,52 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 
+void enable_challenge_mode_cheats()
+{
+	Variable("map_wants_save_disable").SetValue(1);
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("setmodel").RemoveFlag(FCVAR_CHEAT);
+	} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+		Variable("sv_player_collide_with_laser").RemoveFlag(FCVAR_CHEAT);
+		Variable("ent_fire").RemoveFlag(FCVAR_CHEAT);
+		Variable("change_portalgun_linkage_id").RemoveFlag(FCVAR_CHEAT);
+	} else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
+		Variable("give_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("ent_teleport").RemoveFlag(FCVAR_CHEAT);
+		Variable("cl_drawhud").RemoveFlag(FCVAR_CHEAT);
+	}
+}
+void disable_challenge_mode_cheats()
+{
+	Variable("map_wants_save_disable").SetValue(0);
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("setmodel").AddFlag(FCVAR_CHEAT);
+	} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+		Variable("sv_player_collide_with_laser").AddFlag(FCVAR_CHEAT);
+		Variable("ent_fire").AddFlag(FCVAR_CHEAT);
+		Variable("change_portalgun_linkage_id").AddFlag(FCVAR_CHEAT);
+	} else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
+		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("ent_teleport").AddFlag(FCVAR_CHEAT);
+		Variable("cl_drawhud").AddFlag(FCVAR_CHEAT);
+	}
+}
 void sar_challenge_mode_callback(IConVar *var, const char *pOldValue, float flOldValue)
 {
 	if (!std::strcmp(pOldValue, "0")) {
 		sv_bonus_challenge.SetValue(1);
-		Variable("map_wants_save_disable").SetValue(1);
+		enable_challenge_mode_cheats();
 	} else {
 		sv_bonus_challenge.SetValue(0);
-		Variable("map_wants_save_disable").SetValue(0);
+		disable_challenge_mode_cheats();
 	}
 }
 Variable sar_challenge_mode("sar_challenge_mode", "0", 0, 1, "Enables challenge mode.\n", FCVAR_DONTRECORD);
@@ -309,15 +347,9 @@ void Cheats::Init() {
 
 	sar_fix_reloaded_cheats.UniqueFor(SourceGame_PortalReloaded);
 
-	sar_challenge_mode.UniqueFor(SourceGame_PortalStoriesMel | SourceGame_ApertureTag);
+	sar_challenge_mode.UniqueFor(SourceGame_PortalStoriesMel | SourceGame_ApertureTag | SourceGame_PortalReloaded | SourceGame_ThinkingWithTimeMachine);
 
 	cvars->Unlock();
-
-	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-		Variable("give_portalgun").RemoveFlag(FCVAR_CHEAT);
-		Variable("setmodel").RemoveFlag(FCVAR_CHEAT);
-		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
-	}
 
 	Variable::RegisterAll();
 	Command::RegisterAll();
@@ -327,10 +359,8 @@ void Cheats::Init() {
 void Cheats::Shutdown() {
 	cvars->Lock();
 
-	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
-		Variable("setmodel").AddFlag(FCVAR_CHEAT);
-		Variable("upgrade_portalgun").AddFlag(FCVAR_CHEAT);
+	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag | SourceGame_PortalReloaded | SourceGame_ThinkingWithTimeMachine)) {
+		disable_challenge_mode_cheats();
 	}
 
 	Variable::UnregisterAll();

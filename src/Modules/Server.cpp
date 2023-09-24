@@ -894,7 +894,7 @@ bool Server::Init() {
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
-	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag)) {
+	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_ApertureTag | SourceGame_PortalReloaded | SourceGame_ThinkingWithTimeMachine)) {
 #ifdef _WIN32
 		auto g_ChallengeNodeDataAddr = Memory::Scan(this->Name(), "55 8B EC 53 56 33 DB BE ? ? ? ? 8D 64 24 00", 8);
 #else
