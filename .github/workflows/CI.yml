@@ -4,17 +4,13 @@ on:
   push:
     branches: '**'
     tags-ignore: '**'
-    paths-ignore:
-      - '.github/*'
-      - '.github/workflows/CD.yml'
-      - '.mailmap'
-      - '.gitattributes'
-      - '.gitignore'
-      - 'docs/**'
-      - 'livesplit/**'
-      - '**.md'
-      - 'LICENSE'
+    paths:
+      - 'lib/**'
+      - 'src/**'
   pull_request:
+    paths:
+      - 'lib/**'
+      - 'src/**'
   workflow_dispatch:
 
 jobs:
