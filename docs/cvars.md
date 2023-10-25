@@ -1,4 +1,4 @@
-# SAR: Cvars ASDF
+# SAR: Cvars
 
 |Name|Default|Description|
 |---|---|---|
