@@ -29,14 +29,11 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # queries: security-extended,security-and-quality
+        queries: security-extended,security-and-quality
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    # - run: |
-    #     echo "Run, Build Application using script"
-    #     ./location_of_script_within_repo/buildscript.sh
+    - name: Build
+      run: |
+        make -j4
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
