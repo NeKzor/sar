@@ -31,9 +31,13 @@ jobs:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
 
+    - name: Install Dependencies
+      run: |
+        sudo apt-get install -y g++-10-multilib
+
     - name: Build
       run: |
-        make -j4
+        make -j$(nproc)
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
