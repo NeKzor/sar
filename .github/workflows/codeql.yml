@@ -4,12 +4,14 @@ on:
   push:
     branches: [ "codeql-test" ]
     paths:
+      - '.github/workflows/codeql.yml'
       - 'lib/**'
       - 'src/**'
       - 'Makefile'
   pull_request:
     branches: [ "codeql-test" ]
     paths:
+      - '.github/workflows/codeql.yml'
       - 'lib/**'
       - 'src/**'
       - 'Makefile'
