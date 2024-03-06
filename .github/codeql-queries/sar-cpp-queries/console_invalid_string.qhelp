@@ -1,4 +1,7 @@
-<!DOCTYPE qhelp SYSTEM "qhelp.dtd">
+<!DOCTYPE qhelp PUBLIC
+  "-//Semmle//qhelp//EN"
+  "qhelp.dtd">
+<qhelp>
 <qhelp>
     <overview>
         <p>
