@@ -1,5 +1,26 @@
 name: "SourceAutoRecord CodeQL config"
 disable-default-queries: true
 queries:
-    #- uses: ./.github/codeql-queries/sar-code-scanning.qls
-    - uses: ./.github/codeql-queries/sar-cpp-queries
+  - uses: ./.github/codeql-queries/sar-code-scanning.qls
+  - uses: ./.github/codeql-queries/sar-cpp-queries
+query-filters:
+- exclude:
+    id: cpp/short-global-name
+- exclude:
+    id: cpp/fixme-comment
+- exclude:
+    id: cpp/local-variable-hides-global-variable
+- exclude:
+    id: cpp/declaration-hides-parameter
+- exclude:
+    id: cpp/commented-out-code
+- exclude:
+    id: cpp/undisciplined-multiple-inheritance
+- exclude:
+    id: cpp/irregular-enum-init
+- exclude:
+    id: cpp/loop-variable-changed
+- exclude:
+    id: cpp/unused-static-function
+- exclude:
+    id: cpp/declaration-hides-variable
