@@ -14,28 +14,58 @@
 
 import cpp
 
-from VariableCall call, PointerFieldAccess access, int arg
+abstract class FormatArgument extends Expr {
+  abstract Expr getFormatArgument();
+}
+
+class ConsoleVariableCall extends VariableCall, FormatArgument {
+  ConsoleVariableCall() {
+    exists(PointerFieldAccess access |
+      access = this.getExpr() and
+      access.getQualifier().toString() = "console" and
+      this.getArgument(0).toString().matches("%\\%s%") and
+      exists(int argIndex |
+        this.getArgument(argIndex)
+            .getFullyConverted()
+            .getUnspecifiedType()
+            .toString()
+            .matches("%basic_string%")
+      )
+    )
+  }
+
+  override Expr getFormatArgument() {
+    exists(int argIndex |
+      this.getArgument(argIndex)
+          .getFullyConverted()
+          .getUnspecifiedType()
+          .toString()
+          .matches("%basic_string%") and
+      result = this.getArgument(argIndex)
+    )
+  }
+}
+
+class ConsoleFunctionCall extends FunctionCall, FormatArgument {
+  ConsoleFunctionCall() {
+    this.getQualifier().toString() = "console" and
+    this.getArgument(0).toString().matches("%\\%s%") and
+    exists(int argIndex |
+      this.getArgument(argIndex).getFullyConverted().getType().toString().matches("%basic_string%")
+    )
+  }
+
+  override Expr getFormatArgument() {
+    exists(int argIndex |
+      this.getArgument(argIndex).getFullyConverted().getType().toString().matches("%basic_string%") and
+      result = this.getArgument(argIndex)
+    )
+  }
+}
+
+from Call call
 where
-  access = call.getExpr() and
-  access.getQualifier().toString() = "console" and
-  call.getArgument(0).toString().matches("%\\%s%") and
-  exists(int n |
-    call.getArgument(n)
-        .getFullyConverted()
-        .getUnspecifiedType()
-        .toString()
-        .matches("%basic_string%") and
-    arg = n
-  )
-select call.getArgument(arg),
+  call instanceof ConsoleVariableCall or
+  call instanceof ConsoleFunctionCall
+select call.(FormatArgument).getFormatArgument(),
   "Passed invalid std::string to console function. Please use .c_str() to convert it to a C-string."
-// from FunctionCall call, int arg
-// where
-//   call.getQualifier().toString() = "console" and
-//   call.getArgument(0).toString().matches("%\\%s%") and
-//   exists(int n |
-//     call.getArgument(n).getFullyConverted().getType().toString().matches("%basic_string%") and
-//     arg = n
-//   )
-// select call.getArgument(arg),
-//   "Passed invalid std::string to console function. Please use .c_str() to convert it to a C-string."

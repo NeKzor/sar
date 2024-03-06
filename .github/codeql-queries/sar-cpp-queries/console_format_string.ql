@@ -15,36 +15,68 @@
 
 import cpp
 
-from VariableCall call, PointerFieldAccess access, string fn, int arg
-where
-  access = call.getExpr() and
-  fn = access.toString() and
-  access.getQualifier().toString() = "console" and
-  not fn.matches("LoggingSystem%") and
-  (
-    not fn = "ColorMsg" and
-    call.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
-    arg = 0
+abstract class FormatArgument extends Expr {
+  abstract Expr getFormatArgument();
+}
+
+class ConsoleVariableCall extends VariableCall, FormatArgument {
+  ConsoleVariableCall() {
+    exists(PointerFieldAccess access |
+      access = this.getExpr() and
+      access.getQualifier().toString() = "console" and
+      not access.toString().matches("LoggingSystem%") and
+      (
+        access.toString() != "ColorMsg" and
+        this.getArgument(0).getType().getPointerIndirectionLevel() > 0
+        or
+        access.toString() = "ColorMsg" and
+        this.getArgument(1).getType().getPointerIndirectionLevel() > 0
+      )
+    )
+  }
+
+  override Expr getFormatArgument() {
+    this.getExpr().toString() != "ColorMsg" and
+    this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
+    result = this.getArgument(0)
     or
-    fn = "ColorMsg" and
-    call.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
-    arg = 1
-  )
-select call.getArgument(arg),
+    this.getExpr().toString() = "ColorMsg" and
+    this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
+    result = this.getArgument(1)
+  }
+}
+
+class ConsoleFunctionCall extends FunctionCall, FormatArgument {
+  ConsoleFunctionCall() {
+    exists(int argIndex |
+      this.getQualifier().toString() = "console" and
+      (
+        this.toString() != "ColorMsg" and
+        this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
+        argIndex = 0
+        or
+        this.toString() = "ColorMsg" and
+        this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
+        argIndex = 1
+      ) and
+      this.getArgument(argIndex).toString() != "m_pszHelpString"
+    )
+  }
+
+  override Expr getFormatArgument() {
+    this.toString() != "ColorMsg" and
+    this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
+    result = this.getArgument(0)
+    or
+    this.toString() = "ColorMsg" and
+    this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
+    result = this.getArgument(1)
+  }
+}
+
+from Call call
+where
+  call instanceof ConsoleVariableCall or
+  call instanceof ConsoleFunctionCall
+select call.(FormatArgument).getFormatArgument(),
   "Call to console function uses an uncontrolled format string. Please use a controlled format string like \"%s\"."
-// from FunctionCall call, string fn, int arg
-// where
-//   fn = call.toString() and
-//   call.getQualifier().toString() = "console" and
-//   (
-//     not fn = "ColorMsg" and
-//     call.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
-//     arg = 0
-//     or
-//     fn = "ColorMsg" and
-//     call.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
-//     arg = 1
-//   ) and
-//   not call.getArgument(arg).toString() = "m_pszHelpString"
-// select call.getArgument(arg),
-//   "Call to console function uses an uncontrolled format string. Please use a controlled format string like \"%s\"."
