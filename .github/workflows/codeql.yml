@@ -47,7 +47,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         config-file: .github/codeql-queries/codeql-config.yml
-        #queries: security-extended,security-and-quality
+        queries: security-extended,security-and-quality
 
     - name: Build
       run: |
