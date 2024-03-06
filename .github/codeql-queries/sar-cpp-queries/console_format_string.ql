@@ -37,11 +37,9 @@ class ConsoleVariableCall extends VariableCall, FormatArgument {
 
   override Expr getFormatArgument() {
     this.getExpr().toString() != "ColorMsg" and
-    this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
     result = this.getArgument(0)
     or
     this.getExpr().toString() = "ColorMsg" and
-    this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
     result = this.getArgument(1)
   }
 }
@@ -52,24 +50,21 @@ class ConsoleFunctionCall extends FunctionCall, FormatArgument {
       this.getQualifier().toString() = "console" and
       (
         this.toString() != "ColorMsg" and
-        this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
         argIndex = 0
         or
         this.toString() = "ColorMsg" and
-        this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
         argIndex = 1
       ) and
+      this.getArgument(argIndex).getType().getPointerIndirectionLevel() > 0 and
       this.getArgument(argIndex).toString() != "m_pszHelpString"
     )
   }
 
   override Expr getFormatArgument() {
     this.toString() != "ColorMsg" and
-    this.getArgument(0).getType().getPointerIndirectionLevel() > 0 and
     result = this.getArgument(0)
     or
     this.toString() = "ColorMsg" and
-    this.getArgument(1).getType().getPointerIndirectionLevel() > 0 and
     result = this.getArgument(1)
   }
 }
