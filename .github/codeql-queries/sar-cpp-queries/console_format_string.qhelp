@@ -1,0 +1,24 @@
+<!DOCTYPE qhelp SYSTEM "qhelp.dtd">
+<qhelp>
+    <overview>
+        <p>
+        The logging methods of the <code>console</code> Object require a controlled format string.
+        </p>
+    </overview>
+    <recommendation>
+        <p>
+        Pass in a string like "%s" as the format, rather than passing in a variable directly.
+        </p>
+    </recommendation>
+    <example>
+      <p>The following code is vulnerable:</p>
+      <sample src="console_format_string_bad.cpp" />
+    </example>
+    <example>
+      <p>Use <code>"%s"</code> as the first argument to fix this:</p>
+      <sample src="console_format_string_good.cpp" />
+    </example>
+    <references>
+      <li>Common Weakness Enumeration: <a href="https://cwe.mitre.org/data/definitions/134.html">CWE-134</a>.</li>
+    </references>
+</qhelp>

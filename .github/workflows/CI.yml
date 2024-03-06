@@ -6,6 +6,7 @@ on:
     tags-ignore: '**'
     paths-ignore:
       - '.github/*'
+      - '.github/codeql-queries/**'
       - '.github/workflows/CD.yml'
       - '.github/workflows/codeql.yml'
       - '.mailmap'

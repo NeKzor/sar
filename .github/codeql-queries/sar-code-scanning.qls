@@ -1,0 +1,2 @@
+- import: codeql-suites/cpp-code-scanning.qls
+  from: codeql-cpp
