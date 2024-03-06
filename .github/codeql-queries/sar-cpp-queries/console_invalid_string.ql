@@ -5,7 +5,7 @@
  * @problem.severity error
  * @security-severity 7.5
  * @precision high
- * @id sar-cpp-queries/console-invalid-string
+ * @id sar-cpp-queries/console-invalid-string-2
  * @tags reliability
  *       correctness
  *       security

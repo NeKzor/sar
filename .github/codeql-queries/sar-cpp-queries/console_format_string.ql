@@ -6,7 +6,7 @@
  * @problem.severity recommendation
  * @security-severity 9.3
  * @precision high
- * @id sar-cpp-queries/console-format-string
+ * @id sar-cpp-queries/console-format-string-2
  * @tags maintainability
  *       correctness
  *       security
