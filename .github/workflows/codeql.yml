@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "codeql-test" ]
     paths:
+      - '.github/codeql-queries/**'
       - '.github/workflows/codeql.yml'
       - 'lib/**'
       - 'src/**'
@@ -11,6 +12,7 @@ on:
   pull_request:
     branches: [ "codeql-test" ]
     paths:
+      - '.github/codeql-queries/**'
       - '.github/workflows/codeql.yml'
       - 'lib/**'
       - 'src/**'
