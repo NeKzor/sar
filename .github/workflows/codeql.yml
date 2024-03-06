@@ -3,8 +3,16 @@ name: "CodeQL"
 on:
   push:
     branches: [ "codeql-test" ]
+    paths:
+      - 'lib/**'
+      - 'src/**'
+      - 'Makefile'
   pull_request:
     branches: [ "codeql-test" ]
+    paths:
+      - 'lib/**'
+      - 'src/**'
+      - 'Makefile'
   schedule:
     - cron: '18 23 * * 2'
   workflow_dispatch:
@@ -34,10 +42,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        config: |
-          disable-default-queries: true
-          queries:
-              - uses: ./.github/codeql-queries/sar-cpp-queries
+        config-file: .github/codeql-queries/codeql-config.yml
         #queries: security-extended,security-and-quality
 
     - name: Build

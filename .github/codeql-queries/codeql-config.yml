@@ -1,5 +1,5 @@
 name: "SourceAutoRecord CodeQL config"
-
+disable-default-queries: true
 queries:
     #- uses: ./.github/codeql-queries/sar-code-scanning.qls
     - uses: ./.github/codeql-queries/sar-cpp-queries
