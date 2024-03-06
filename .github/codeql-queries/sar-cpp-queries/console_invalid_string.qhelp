@@ -2,7 +2,7 @@
 <qhelp>
     <overview>
         <p>
-        The logging methods of the <code>console</code> Object do not support <code>std::string</code> directly.
+        The logging methods of the <code>console</code> object do not support <code>std::string</code> directly.
         </p>
     </overview>
     <recommendation>
@@ -20,6 +20,5 @@
       <sample src="console_invalid_string_good.cpp" />
     </example>
     <references>
-      <li>Common Weakness Enumeration: <a href="https://cwe.mitre.org/data/definitions/686.html">CWE-686</a>.</li>
     </references>
 </qhelp>

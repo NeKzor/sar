@@ -2,7 +2,7 @@
 <qhelp>
     <overview>
         <p>
-        The logging methods of the <code>console</code> Object require a controlled format string.
+        The logging methods of the <code>console</code> object require a controlled format string.
         </p>
     </overview>
     <recommendation>
@@ -19,6 +19,5 @@
       <sample src="console_format_string_good.cpp" />
     </example>
     <references>
-      <li>Common Weakness Enumeration: <a href="https://cwe.mitre.org/data/definitions/134.html">CWE-134</a>.</li>
     </references>
 </qhelp>
