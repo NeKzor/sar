@@ -2,7 +2,6 @@
   "-//Semmle//qhelp//EN"
   "qhelp.dtd">
 <qhelp>
-<qhelp>
     <overview>
         <p>
         The logging methods of the <code>console</code> object require a controlled format string.
