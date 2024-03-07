@@ -1,0 +1,19 @@
+<!DOCTYPE qhelp PUBLIC
+  "-//Semmle//qhelp//EN"
+  "qhelp.dtd">
+<qhelp>
+    <overview>
+        <p>
+        All declared function hooks should have a comment that document the full name of the function.
+        </p>
+    </overview>
+    <recommendation>
+        <p>
+        Add a comment like <code>// &lt;classname&gt;::&lt;function&gt;</code> above the macro.
+        </p>
+    </recommendation>
+    <example>
+      <p>Here is an example of what is could look like:</p>
+      <sample src="decl_detour_comment_good.cpp" />
+    </example>
+</qhelp>
