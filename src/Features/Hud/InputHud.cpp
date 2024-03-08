@@ -302,10 +302,14 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
 
     auto xScreen = 0;
     auto yScreen = 0;
-#if _WIN32 && !__x86_64
+#if _WIN32
+    #if __x86_64
+    engine->GetScreenSize(engine->engineClient->ThisPtr(), xScreen, yScreen);
+    #else
     engine->GetScreenSize(xScreen, yScreen);
+    #endif
 #else
-    engine->GetScreenSize(nullptr, xScreen, yScreen);
+    engine->GetScreenSize(nullptr, xScreen, xScreen);
 #endif
 
     auto xPos = sar_ihud_x.GetInt();
@@ -326,11 +330,6 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     } else if (!std::strcmp(args[2], "right")) {
         xPos = xScreen - xSize;
     }
-    
-    console->Print("%i %i\n", xPos, yPos);
-
-    console->Print("%s\n", sar_ihud_x.ThisPtr()->m_pszName);
-    console->Print("%s\n", sar_ihud_x.ThisPtr()->m_pParent ? sar_ihud_x.ThisPtr()->m_pParent->m_pszName : "NULL");
 
     sar_ihud_x.SetValue(xPos);
     sar_ihud_y.SetValue(yPos);
