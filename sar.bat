@@ -12,6 +12,6 @@ IF [%2]==[] (
 )
 
 SET "binary=%~1"
-SET "game_dir=%~2"
+SET "game_bin=%~2\bin\win64"
 
-XCOPY "%binary%" "%game_dir%\" /Y
+XCOPY "%binary%" "%game_bin%\" /Y
