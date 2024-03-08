@@ -259,7 +259,7 @@ DLL_EXPORT auto sar_unload() -> void
     sar.Unload();
 }
 
-#ifdef __x86_64
+#ifdef _WIN64
 auto APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) -> BOOL
 {
     if (reason == DLL_PROCESS_ATTACH) {
