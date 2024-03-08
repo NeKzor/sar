@@ -51,7 +51,7 @@ Replay* ReplayProvider::GetCurrentReplay()
 
     return this->replays.back();
 }
-bool ReplayProvider::AnyReplaysLoaded()
+bool ReplayProvider::AnyReplaysLoaded() const
 {
     return !this->replays.empty();
 }
@@ -112,7 +112,7 @@ void ReplayProvider::MergeViews(int firstReplay, int secondReplay, int firstView
     auto frameDiff = replay->GetFrameSize() - replay2->GetFrameSize();
     if (frameDiff != 0) {
         auto view = replay->GetView((frameDiff < 0) ? secondView : firstView);
-        auto last = view->frames.back();
+        auto& last = view->frames.back();
         while (frameDiff--) {
             view->frames.push_back(last);
         }
@@ -162,7 +162,7 @@ void ReplayProvider::Export(const char* fileName, int index)
     auto frameSize = (int)replay->GetView(0)->frames.size();
     while (frameIndex < frameSize) {
         for (auto viewIndex = 0; viewIndex < viewSize; ++viewIndex) {
-            auto frame = replay->GetView(viewIndex)->frames[frameIndex];
+            auto& frame = replay->GetView(viewIndex)->frames[frameIndex];
             file.write((char*)&frame.buttons, sizeof(frame.buttons));
             file.write((char*)&frame.forwardmove, sizeof(frame.forwardmove));
             file.write((char*)&frame.impulse, sizeof(frame.impulse));

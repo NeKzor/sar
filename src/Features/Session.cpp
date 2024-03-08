@@ -73,6 +73,7 @@ void Session::Start()
     timer->Rebase(tick);
     speedrun->Resume(tick);
 
+#ifndef _WIN32
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {
             rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
@@ -83,6 +84,7 @@ void Session::Start()
         rebinder->RebindSave();
         rebinder->RebindReload();
     }
+#endif
 
     if (sar_tas_autostart.GetBool()) {
         cmdQueuer->Start();

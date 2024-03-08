@@ -21,11 +21,11 @@ ReplayView* Replay::GetView(int view)
 }
 int Replay::GetViewSize()
 {
-    return this->views.size();
+    return int(this->views.size());
 }
 int Replay::GetFrameSize()
 {
-    return this->views[0].frames.size();
+    return int(this->views[0].frames.size());
 }
 const char* Replay::GetSource()
 {

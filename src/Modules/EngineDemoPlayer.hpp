@@ -21,9 +21,13 @@ public:
 public:
     int GetTick();
     bool IsPlaying();
+    void PrintDemoInfo();
 
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);
+
+    // CHLClient::OnDemoPlaybackStart
+    DECL_DETOUR(OnDemoPlaybackStart, const char* pDemoBaseName);
 
     bool Init() override;
     void Shutdown() override;

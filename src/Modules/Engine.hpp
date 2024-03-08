@@ -8,6 +8,7 @@
 #include "Interface.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include <cstdint>
 
 #if _WIN32
 #define IServerMessageHandler_VMT_Offset 8
@@ -20,7 +21,6 @@ public:
     Interface* s_GameEventManager = nullptr;
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
-    Interface* s_ServerPlugin = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__rescall*)(void* thisptr);
@@ -33,12 +33,24 @@ public:
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
+#ifdef __x86_64
+    using _GetLocalClient = uintptr_t (__fastcall*)(int index);
+#else
     using _GetLocalClient = int (*)(int index);
+#endif
+
 #ifdef _WIN32
+#ifdef __x86_64
+    using _GetScreenSize = int(__fastcall*)(void* thisptr, int& width, int& height);
+    using _GetActiveSplitScreenPlayerSlot = int (*)();
+    using _ScreenPosition = int(__fastcall*)(const Vector& point, Vector& screen);
+    using _ConPrintEvent = int(__fastcall*)(IGameEvent* ev);
+#else
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
     using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
     using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
+#endif
 #else
     using _GetScreenSize = int(__cdecl*)(void* thisptr, int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)(void* thisptr);
@@ -80,14 +92,14 @@ public:
 
 public:
     void ExecuteCommand(const char* cmd);
-    int GetTick();
-    float ToTime(int tick);
+    int GetTick() const;
+    float ToTime(int tick) const;
     int GetLocalPlayerIndex();
     edict_t* PEntityOfEntIndex(int iEntIndex);
     QAngle GetAngles(int nSlot);
     void SetAngles(int nSlot, QAngle va);
     void SendToCommandBuffer(const char* text, int delay);
-    int PointToScreen(const Vector& point, Vector& screen);
+    int PointToScreen(const Vector& point, Vector& screen) const;
     void SafeUnload(const char* postCommand = nullptr);
 
     // CClientState::Disconnect
@@ -109,8 +121,6 @@ public:
     // CSteam3Client::OnGameOverlayActivated
     DECL_DETOUR_B(OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayActivated);
 
-    DECL_DETOUR_COMMAND(plugin_load);
-    DECL_DETOUR_COMMAND(plugin_unload);
     DECL_DETOUR_COMMAND(exit);
     DECL_DETOUR_COMMAND(quit);
     DECL_DETOUR_COMMAND(help);

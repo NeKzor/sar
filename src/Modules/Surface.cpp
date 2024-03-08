@@ -9,7 +9,7 @@
 
 int Surface::GetFontHeight(HFont font)
 {
-#ifdef _WIN32
+#if _WIN32 && !__x86_64
     return this->GetFontTall(font);
 #else
     return this->GetFontTall(this->matsurface->ThisPtr(), font);

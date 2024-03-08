@@ -9,8 +9,10 @@
 #include "Variable.hpp"
 
 class Client : public Module {
-private:
+public:
     Interface* g_ClientDLL = nullptr;
+
+private:
     Interface* g_pClientMode = nullptr;
     Interface* g_pClientMode2 = nullptr;
     Interface* g_HUDChallengeStats = nullptr;

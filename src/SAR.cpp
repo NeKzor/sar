@@ -1,5 +1,6 @@
 #include "SAR.hpp"
 
+#include "Utils/Platform.hpp"
 #include <cstring>
 
 #include "Features.hpp"
@@ -12,31 +13,33 @@
 #include "Variable.hpp"
 
 SAR sar;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
 SAR::SAR()
-    : modules(new Modules())
-    , features(new Features())
-    , cheats(new Cheats())
-    , plugin(new Plugin())
-    , game(Game::CreateNew())
+    : modules()
+    , features()
+    , cheats()
+    , game()
 {
 }
 
-bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
+bool SAR::Load()
 {
     console = new Console();
     if (!console->Init())
         return false;
 
+    this->game = Game::CreateNew();
     if (this->game) {
         this->game->LoadOffsets();
 
         tier1 = new Tier1();
         if (tier1->Init()) {
+            this->features = new Features();
             this->features->AddFeature<Config>(&config);
             this->features->AddFeature<Cvars>(&cvars);
+#ifndef _WIN32
             this->features->AddFeature<Rebinder>(&rebinder);
+#endif
             this->game->Is(SourceGame_INFRA)
                 ? this->features->AddFeature<InfraSession>(reinterpret_cast<InfraSession**>(&session))
                 : this->features->AddFeature<Session>(&session);
@@ -62,6 +65,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
 
+            this->modules = new Modules();
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
             this->modules->AddModule<Surface>(&surface);
@@ -75,6 +79,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
+                this->cheats = new Cheats();
                 this->cheats->Init();
 
                 this->features->AddFeature<TasTools>(&tasTools);
@@ -93,21 +98,17 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 config->Load();
 
-                this->SearchPlugin();
-
                 console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
                 return true;
             } else {
-                console->Warning("SAR: Failed to load engine module!\n");
+                console->Warning("Failed to load engine module!\n");
             }
         } else {
-            console->Warning("SAR: Failed to load tier1 module!\n");
+            console->Warning("Failed to load tier1 module!\n");
         }
     } else {
-        console->Warning("SAR: Game not supported!\n");
+        console->Warning("Game not supported!\n");
     }
-
-    console->Warning("SAR: Failed to load SourceAutoRecord!\n");
 
     if (sar.cheats) {
         sar.cheats->Shutdown();
@@ -123,43 +124,36 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)
     SAFE_DELETE(sar.modules)
-    SAFE_DELETE(sar.plugin)
     SAFE_DELETE(sar.game)
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
     return false;
 }
 
-// SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
-// This is a race condition though
-bool SAR::GetPlugin()
+void SAR::Unload()
 {
-    auto s_ServerPlugin = reinterpret_cast<uintptr_t>(engine->s_ServerPlugin->ThisPtr());
-    auto m_Size = *reinterpret_cast<int*>(s_ServerPlugin + CServerPlugin_m_Size);
-    if (m_Size > 0) {
-        auto m_Plugins = *reinterpret_cast<uintptr_t*>(s_ServerPlugin + CServerPlugin_m_Plugins);
-        for (auto i = 0; i < m_Size; ++i) {
-            auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-            if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
-                this->plugin->ptr = ptr;
-                this->plugin->index = i;
-                return true;
-            }
-        }
+    if (sar.cheats) {
+        sar.cheats->Shutdown();
     }
-    return false;
-}
-void SAR::SearchPlugin()
-{
-    this->findPluginThread = std::thread([this]() {
-        GO_THE_FUCK_TO_SLEEP(1000);
-        if (this->GetPlugin()) {
-            this->plugin->ptr->m_bDisable = true;
-        } else {
-            console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
-        }
-    });
-    this->findPluginThread.detach();
+    if (sar.features) {
+        sar.features->DeleteAll();
+    }
+
+    if (sar.modules) {
+        sar.modules->ShutdownAll();
+    }    
+
+    SAFE_DELETE(sar.features)
+    SAFE_DELETE(sar.cheats)
+    SAFE_DELETE(sar.modules)
+    SAFE_DELETE(sar.game)
+
+    if (console) {
+        console->Print("Cya :)\n");
+    }
+
+    SAFE_DELETE(tier1)
+    SAFE_DELETE(console)
 }
 
 CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
@@ -238,100 +232,42 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
         name.EnableChange();
     }
 }
-CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
+
+#if _WIN64
+HMODULE module_handle = {};
+auto sar_shutdown() -> void
 {
-    if (sar.cheats) {
-        sar.cheats->Shutdown();
+    FreeLibraryAndExitThread(module_handle, 0);
+}
+#endif
+
+CON_COMMAND_F(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    sar.Unload();
+#if _WIN64
+    CreateRemoteThread(GetCurrentProcess(), 0, 0, LPTHREAD_START_ROUTINE(sar_shutdown), 0, 0, 0);
+#endif
+}
+
+DLL_EXPORT auto sar_load() -> int
+{
+    return sar.Load() ? 0 : 1;
+}
+
+DLL_EXPORT auto sar_unload() -> void
+{
+    sar.Unload();
+}
+
+#ifdef __x86_64
+auto APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) -> BOOL
+{
+    if (reason == DLL_PROCESS_ATTACH) {
+        module_handle = module;
+        return sar_load() == 0;
+    } else if (reason == DLL_PROCESS_DETACH) {
+        sar_unload();
     }
-    if (sar.features) {
-        sar.features->DeleteAll();
-    }
-
-    if (sar.GetPlugin()) {
-        // SAR has to unhook CEngine some ticks before unloading the module
-        auto unload = std::string("plugin_unload ") + std::to_string(sar.plugin->index);
-        engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
-    }
-
-    if (sar.modules) {
-        sar.modules->ShutdownAll();
-    }    
-
-    SAFE_DELETE(sar.features)
-    SAFE_DELETE(sar.cheats)
-    SAFE_DELETE(sar.modules)
-    SAFE_DELETE(sar.plugin)
-    SAFE_DELETE(sar.game)
-
-    console->Print("Cya :)\n");
-
-    SAFE_DELETE(tier1)
-    SAFE_DELETE(console)
+    return TRUE;
 }
-
-#pragma region Unused callbacks
-void SAR::Unload()
-{
-}
-void SAR::Pause()
-{
-}
-void SAR::UnPause()
-{
-}
-const char* SAR::GetPluginDescription()
-{
-    return SAR_PLUGIN_SIGNATURE;
-}
-void SAR::LevelInit(char const* pMapName)
-{
-}
-void SAR::ServerActivate(void* pEdictList, int edictCount, int clientMax)
-{
-}
-void SAR::GameFrame(bool simulating)
-{
-}
-void SAR::LevelShutdown()
-{
-}
-void SAR::ClientFullyConnect(void* pEdict)
-{
-}
-void SAR::ClientActive(void* pEntity)
-{
-}
-void SAR::ClientDisconnect(void* pEntity)
-{
-}
-void SAR::ClientPutInServer(void* pEntity, char const* playername)
-{
-}
-void SAR::SetCommandClient(int index)
-{
-}
-void SAR::ClientSettingsChanged(void* pEdict)
-{
-}
-int SAR::ClientConnect(bool* bAllowConnect, void* pEntity, const char* pszName, const char* pszAddress, char* reject, int maxrejectlen)
-{
-    return 0;
-}
-int SAR::ClientCommand(void* pEntity, const void*& args)
-{
-    return 0;
-}
-int SAR::NetworkIDValidated(const char* pszUserName, const char* pszNetworkID)
-{
-    return 0;
-}
-void SAR::OnQueryCvarValueFinished(int iCookie, void* pPlayerEntity, int eStatus, const char* pCvarName, const char* pCvarValue)
-{
-}
-void SAR::OnEdictAllocated(void* edict)
-{
-}
-void SAR::OnEdictFreed(const void* edict)
-{
-}
-#pragma endregion
+#endif

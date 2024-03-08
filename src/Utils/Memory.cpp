@@ -67,7 +67,10 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
             std::snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
 
             module.base = info->dlpi_addr + info->dlpi_phdr[0].p_paddr;
-            module.size = info->dlpi_phdr[0].p_memsz;
+
+            auto last = info->dlpi_phdr[info->dlpi_phnum - 1];
+            module.size = (last.p_paddr + last.p_memsz) - info->dlpi_phdr[0].p_paddr;
+
             std::strncpy(module.path, info->dlpi_name, sizeof(module.path));
 
             Memory::moduleList.push_back(module);
@@ -91,7 +94,7 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
 const char* Memory::GetModulePath(const char* moduleName)
 {
     auto info = Memory::ModuleInfo();
-    return (Memory::TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
+    return (Memory::TryGetModule(moduleName, &info)) ? info.path : nullptr;
 }
 void* Memory::GetModuleHandleByName(const char* moduleName)
 {
@@ -249,10 +252,10 @@ Memory::Patch::~Patch()
         this->original = nullptr;
     }
 }
-bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
+bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes, size_t size)
 {
     this->location = location;
-    this->size = sizeof(bytes) / sizeof(bytes[0]) - 1;
+    this->size = size;
     this->original = new unsigned char[this->size];
 
     for (size_t i = 0; i < this->size; ++i) {

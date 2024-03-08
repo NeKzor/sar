@@ -2,6 +2,7 @@ BINARY=sar.so
 STEAM=/home/nekz/.steam/steam/steamapps/common/
 SDIR=src/
 ODIR=obj/
+PROC=revolution
 
 SRCS=$(wildcard $(SDIR)*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/*.cpp)
@@ -19,9 +20,9 @@ SRCS+=$(wildcard $(SDIR)Modules/*.cpp)
 SRCS+=$(wildcard $(SDIR)Utils/*.cpp)
 OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 
-CC=g++-8
-STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas
-CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall -s $(STFU) -I$(SDIR)
+CC=g++-11
+STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-attributes
+CFLAGS=-std=c++17 -m64 -fPIC -static-libstdc++ -shared -Wall -s $(STFU) -I$(SDIR)
 #CFLAGS+=-D _DEBUG
 EXPORT=cp -fu
 PRINT=echo
@@ -70,3 +71,9 @@ get-deps:
 
 cvars:
 	node cvars.js "$(STEAM)Portal 2"
+
+load:
+	sudo ./sar.sh load $(PROC) $(BINARY)
+
+unload:
+	sudo ./sar.sh unload $(PROC) $(BINARY)

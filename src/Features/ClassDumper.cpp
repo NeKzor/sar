@@ -1,5 +1,6 @@
 #include "ClassDumper.hpp"
 
+#include "Game.hpp"
 #include <cstring>
 #include <fstream>
 #include <functional>
@@ -19,7 +20,7 @@
 ClassDumper* classDumper;
 
 ClassDumper::ClassDumper()
-    : sendPropSize(sar.game->Is(SourceGame_Portal2Engine) ? sizeof(SendProp2) : sizeof(SendProp))
+    : sendPropSize(sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine) ? sizeof(SendProp2) : sizeof(SendProp))
     , serverClassesFile("server_classes.json")
     , clientClassesFile("client_classes.json")
 {
@@ -69,7 +70,7 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
         auto type = prop.m_Type;
         auto nextTable = prop.m_pDataTable;
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
+        if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
             auto temp = *reinterpret_cast<SendProp2*>(&prop);
             name = temp.m_pVarName;
             offset = temp.m_Offset;
@@ -87,10 +88,10 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
             ++c;
         }
 
-        file << "{\"name\":\"" << sanitized.c_str() << "\",\"offset\":" << (int16_t)offset;
+        file << "{\"name\":\"" << sanitized << "\",\"offset\":" << std::to_string((int16_t)offset);
 
         if (type != SendPropType::DPT_DataTable) {
-            file << ",\"type\":" << type << "},";
+            file << ",\"type\":" << std::to_string(type) << "},";
             continue;
         }
 
@@ -128,10 +129,10 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table)
             ++c;
         }
 
-        file << "{\"name\":\"" << sanitized.c_str() << "\",\"offset\":" << (int16_t)offset;
+        file << "{\"name\":\"" << sanitized << "\",\"offset\":" << std::to_string((int16_t)offset);
 
         if (type != SendPropType::DPT_DataTable) {
-            file << ",\"type\":" << type << "},";
+            file << ",\"type\":" << std::to_string(type) << "},";
             continue;
         }
 
@@ -188,7 +189,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
             auto type = prop.m_Type;
             auto nextTable = prop.m_pDataTable;
 
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
+            if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
                 auto temp = *reinterpret_cast<SendProp2*>(&prop);
                 name = temp.m_pVarName;
                 offset = temp.m_Offset;

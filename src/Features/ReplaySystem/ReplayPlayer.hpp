@@ -19,7 +19,7 @@ public:
     void Play(Replay* replay, CUserCmd* cmd);
     void StartPlaying(Replay* replay);
     void StopPlaying();
-    bool IsPlaying();
+    bool IsPlaying() const;
 };
 
 extern ReplayPlayer* replayPlayer1;

@@ -82,7 +82,7 @@ DETOUR_COMMAND(EngineDemoRecorder::stop)
 bool EngineDemoRecorder::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
-    auto demorecorder = Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder);
+    auto demorecorder = *Memory::Read<void**>(disconnect + Offsets::demorecorder);
     if (this->s_ClientDemoRecorder = Interface::Create(demorecorder)) {
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook, EngineDemoRecorder::StopRecording, Offsets::StopRecording);

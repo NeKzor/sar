@@ -23,8 +23,9 @@ CommandQueuer::CommandQueuer()
     , curSplitScreen(0)
     , curDelay(0)
     , numberRegex("([-+]?\\d*(\\d|(\\.\\d))\\d*([eE]([+-]?\\d+))?)")
-    , floatRegex("\\[" + numberRegex + ":" + numberRegex + "\\]")
-    , intRegex("\\{" + numberRegex + ":" + numberRegex + "\\}")
+    // TODO
+    //, floatRegex("\\[" + numberRegex + ":" + numberRegex + "\\]")
+    //, intRegex("\\{" + numberRegex + ":" + numberRegex + "\\}")
 {
     this->hasLoaded = true;
 }

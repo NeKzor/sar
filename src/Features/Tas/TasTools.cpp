@@ -26,7 +26,7 @@ TasTools::TasTools()
         this->data.push_back(new TasPlayerData());
     }
 
-    if (sar.game->Is(SourceGame_Portal | SourceGame_Portal2Engine)) {
+    if (sar.game->Is(SourceGame_Portal | SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
     } else if (sar.game->Is(SourceGame_HalfLife2)) {
         std::strncpy(this->className, "CHL2_Player", sizeof(this->className));

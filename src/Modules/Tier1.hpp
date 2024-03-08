@@ -32,8 +32,15 @@ public:
 #else
     using _Dtor = int(__rescall*)(ConVar* thisptr);
 #endif
+#ifdef __x86_64
+    using _Create = int(__rescall*)(ConVar* thisptr, const char* pName, const char* pDefaultValue, int flags,
+        const char* pHelpString, bool bMin, float fMin, bool bMax, float fMax,
+        ConVarChangeCallbackWrapper<FnChangeCallback_t>* callback,
+        ConVarChangeCallbackWrapper<FnChangeCallback2_t>* callback2);
+#else
     using _Create = int(__rescall*)(ConVar* thisptr, const char* pName, const char* pDefaultValue, int flags, const char* pHelpString, bool bMin, float fMin, bool bMax,
         float fMax, FnChangeCallback_t callback);
+#endif
 
     _Dtor Dtor = nullptr;
     _Create Create = nullptr;

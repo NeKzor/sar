@@ -19,7 +19,7 @@ public:
     ~ReplayProvider();
     void CreateNewReplay();
     Replay* GetCurrentReplay();
-    bool AnyReplaysLoaded();
+    bool AnyReplaysLoaded() const;
     void DeleteAll();
     void MergeAll();
     void MergeViews(int firstReplay, int secondReplay, int firstView, int secondView);

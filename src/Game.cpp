@@ -6,6 +6,8 @@
 #include "Command.hpp"
 #include "Utils.hpp"
 
+#include "Modules/Console.hpp"
+
 #include GAME(HalfLife2)
 #include GAME(HalfLife2Episodic)
 #include GAME(HalfLifeSource)
@@ -16,6 +18,7 @@
 #include GAME(ApertureTag)
 #include GAME(PortalStoriesMel)
 #include GAME(ThinkingWithTimeMachine)
+#include GAME(PortalRevolution)
 #ifdef _WIN32
 #include GAME(INFRA)
 #include GAME(HalfLife2Unpack)
@@ -36,6 +39,14 @@
 #define TARGET_MOD  MODULE("server")
 #define TARGET_MOD2 MODULE("engine")
 
+#ifdef _WIN32
+#define PATH_SEPARATOR "\\"
+#define BIN_FOLDER "bin" PATH_SEPARATOR "win64"
+#else
+#define PATH_SEPARATOR "/"
+#define BIN_FOLDER "bin" PATH_SEPARATOR "linux64"
+#endif
+
 const char* Game::Version()
 {
     return "Unknown";
@@ -47,8 +58,11 @@ Game* Game::CreateNew()
         auto target = Memory::ModuleInfo();
         if (Memory::TryGetModule(targetMod, &target)) {
             modDir = std::string(target.path);
-            modDir = modDir.substr(0, modDir.length() - std::strlen(targetMod) - 5);
-            modDir = modDir.substr(modDir.find_last_of("\\/") + 1);
+            modDir = modDir.substr(0, modDir.length() - std::strlen(targetMod) - 1);
+            if (Utils::EndsWith(modDir, BIN_FOLDER)) {
+                modDir = modDir.substr(0, modDir.length() - std::strlen(BIN_FOLDER) - 1);
+                modDir = modDir.substr(modDir.find_last_of(PATH_SEPARATOR) + 1);
+            }
         }
         return modDir;
     };
@@ -103,6 +117,10 @@ Game* Game::CreateNew()
     }
 #endif
 
+    if (Utils::ICompare(modDir, PortalRevolution::ModDir())) {
+        return new PortalRevolution();
+    }
+
     modDir = GetModDir(TARGET_MOD2);
     if (Utils::ICompare(modDir, ApertureTag::GameDir())) {
         return new ApertureTag();
@@ -132,6 +150,7 @@ std::string Game::VersionToString(int version)
         HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
         HAS_GAME_FLAG(SourceGame_HalfLife2Episodic,                "Half-Life 2: Episode One/Two")
         HAS_GAME_FLAG(SourceGame_HalfLifeSource,                   "Half-Life: Source")
+        HAS_GAME_FLAG(SourceGame_PortalRevolution,                 "Portal: Revolution")
     }
     return games;
 }

@@ -161,7 +161,7 @@ void Cvars::Lock()
         sv_footsteps.Lock();
         net_showmsg.Lock();
 
-        if (sar.game->Is(SourceGame_Portal2Game)) {
+        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_StrataPortal2Game)) {
             sv_bonus_challenge.Lock();
             sv_laser_cube_autoaim.Lock();
             ui_loadingscreen_transition_time.Lock();
@@ -185,7 +185,7 @@ void Cvars::Unlock()
         sv_footsteps.Unlock();
         net_showmsg.Unlock();
 
-        if (sar.game->Is(SourceGame_Portal2Game)) {
+        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_StrataPortal2Game)) {
             // Don't find a way to abuse this, ok?
             sv_bonus_challenge.Unlock(false);
             sv_laser_cube_autoaim.Unlock();

@@ -22,7 +22,7 @@ Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding bet
 Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
 Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 255", "RGBA button color of input HUD.\n", 0);
 Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
-Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
+Variable sar_ihud_font_index("sar_ihud_font_index", "10", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
                                                            "Labels are in this order:\n"
                                                            "forward,\n"
@@ -60,7 +60,7 @@ InputHud inputHud;
 InputHud inputHud2;
 
 InputHud::InputHud()
-    : Hud(HudType_InGame, true, SourceGame_Portal2Engine)
+    : Hud(HudType_InGame, true, SourceGame_Portal2Engine | SourceGame_StrataEngine)
     , buttonBits { 0, 0 }
 {
 }
@@ -229,6 +229,10 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
         std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
     }
 
+    for (auto rest = count; rest < COMMAND_COMPLETION_MAXITEMS; ++rest) {
+        std::strcpy(commands[rest], "");
+    }
+
     return count;
 }
 
@@ -271,6 +275,10 @@ int sar_ihud_setlayout_CompletionFunc(const char* partial,
         std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
     }
 
+    for (auto rest = count; rest < COMMAND_COMPLETION_MAXITEMS; ++rest) {
+        std::strcpy(commands[rest], "");
+    }
+
     return count;
 }
 
@@ -294,7 +302,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
 
     auto xScreen = 0;
     auto yScreen = 0;
-#if _WIN32
+#if _WIN32 && !__x86_64
     engine->GetScreenSize(xScreen, yScreen);
 #else
     engine->GetScreenSize(nullptr, xScreen, yScreen);
@@ -318,6 +326,11 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     } else if (!std::strcmp(args[2], "right")) {
         xPos = xScreen - xSize;
     }
+    
+    console->Print("%i %i\n", xPos, yPos);
+
+    console->Print("%s\n", sar_ihud_x.ThisPtr()->m_pszName);
+    console->Print("%s\n", sar_ihud_x.ThisPtr()->m_pParent ? sar_ihud_x.ThisPtr()->m_pParent->m_pszName : "NULL");
 
     sar_ihud_x.SetValue(xPos);
     sar_ihud_y.SetValue(yPos);

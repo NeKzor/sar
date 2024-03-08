@@ -62,29 +62,9 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 
     Variable::GetList().push_back(this);
 }
-void Variable::Realloc()
-{
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
-        auto newptr = new ConVar2(
-            this->ptr->m_pszName,
-            this->ptr->m_pszDefaultValue,
-            this->ptr->m_nFlags,
-            this->ptr->m_pszHelpString,
-            this->ptr->m_bHasMin,
-            this->ptr->m_fMinVal,
-            this->ptr->m_bHasMax,
-            this->ptr->m_fMaxVal);
-        delete this->ptr;
-        this->ptr = reinterpret_cast<ConVar*>(newptr);
-    }
-}
 ConVar* Variable::ThisPtr()
 {
     return this->ptr;
-}
-ConVar2* Variable::ThisPtr2()
-{
-    return reinterpret_cast<ConVar2*>(this->ptr);
 }
 bool Variable::GetBool()
 {
@@ -92,11 +72,19 @@ bool Variable::GetBool()
 }
 int Variable::GetInt()
 {
-    return this->ptr->m_nValue;
+    return int(this->ptr->m_nValue ^ (uintptr_t)this->ptr->m_pParent);
 }
 float Variable::GetFloat()
 {
-    return this->ptr->m_fValue;
+    union {
+        float m_fValue;
+        int m_nValue;
+    } value;
+
+    value.m_fValue = this->ptr->m_fValue;
+    value.m_nValue ^= (uintptr_t)this->ptr->m_pParent;
+
+    return value.m_fValue;
 }
 const char* Variable::GetString()
 {
@@ -108,15 +96,27 @@ const int Variable::GetFlags()
 }
 void Variable::SetValue(const char* value)
 {
+#if _WIN64
+    Memory::VMT<_InternalSetValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetValue)(this->ptr, value);
+#else
     Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(this->ptr, value);
+#endif
 }
 void Variable::SetValue(float value)
 {
+#if _WIN64
+    Memory::VMT<_InternalSetFloatValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetFloatValue)(this->ptr->m_pParent, value);
+#else
     Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(this->ptr, value);
+#endif
 }
 void Variable::SetValue(int value)
 {
+#if _WIN64
+    Memory::VMT<_InternalSetIntValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetIntValue)(this->ptr->m_pParent, value);
+#else
     Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(this->ptr, value);
+#endif
 }
 void Variable::SetFlags(int value)
 {
@@ -154,23 +154,14 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->originalSize = ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size;
-            ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = 0;
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->originalFnChangeCallback = this->ptr->m_fnChangeCallback;
-            this->ptr->m_fnChangeCallback = nullptr;
-        }
+        this->originalSize = this->ptr->m_fnChangeCallback.m_Size;
+        this->ptr->m_fnChangeCallback.m_Size = 0;
     }
 }
 void Variable::EnableChange()
 {
     if (this->ptr) {
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = this->originalSize;
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->ptr->m_fnChangeCallback = this->originalFnChangeCallback;
-        }
+        this->ptr->m_fnChangeCallback.m_Size = this->originalSize;
     }
 }
 void Variable::UniqueFor(int version)
@@ -181,9 +172,13 @@ void Variable::Register()
 {
     if (!this->isRegistered && !this->isReference && this->ptr) {
         this->isRegistered = true;
-        this->Realloc();
+
         this->ptr->ConCommandBase_VTable = tier1->ConVar_VTable;
         this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
+
+        ConVarChangeCallbackWrapper<FnChangeCallback_t> callback = { nullptr, nullptr };
+        ConVarChangeCallbackWrapper<FnChangeCallback2_t> callback2 = { nullptr, nullptr };
+
         tier1->Create(this->ptr,
             this->ptr->m_pszName,
             this->ptr->m_pszDefaultValue,
@@ -193,7 +188,13 @@ void Variable::Register()
             this->ptr->m_fMinVal,
             this->ptr->m_bHasMax,
             this->ptr->m_fMaxVal,
-            nullptr);
+#ifdef __x86_64
+            &callback,
+            &callback2
+#else
+            nullptr
+#endif
+        );
     }
 }
 void Variable::Unregister()

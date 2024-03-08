@@ -30,4 +30,6 @@ public:
 
 extern Rebinder* rebinder;
 
+#ifndef _WIN32
 extern Variable sar_save_flag;
+#endif

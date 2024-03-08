@@ -31,9 +31,9 @@ void Listener::Init()
             this->m_bRegisteredForEvents = engine->AddListener(engine->s_GameEventManager->ThisPtr(), this, event, true);
 
             if (this->m_bRegisteredForEvents) {
-                //console->DevMsg("SAR: Added event listener for %s!\n", event);
+                //console->DevMsg("Added event listener for %s!\n", event);
             } else {
-                console->DevWarning("SAR: Failed to add event listener for %s!\n", event);
+                console->DevWarning("Failed to add event listener for %s!\n", event);
                 break;
             }
         }

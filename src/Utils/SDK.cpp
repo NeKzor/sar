@@ -43,7 +43,7 @@ kbutton_t::Split_t& kbutton_t::GetPerUser(int nSlot)
 
 inline int ENTINDEX(edict_t *pEdict)
 {
-    return (pEdict) ? pEdict - server->gpGlobals->pEdicts : 0;
+    return int(pEdict ? pEdict - server->gpGlobals->pEdicts : 0);
 }
 inline edict_t* INDEXENT(int iEdictNum)
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -40,7 +41,11 @@ private:
 
 public:
     ~Patch();
-    bool Execute(uintptr_t location, unsigned char* bytes);
+    bool Execute(uintptr_t location, unsigned char *bytes, size_t size);
+	template <size_t size>
+	bool Execute(uintptr_t location, unsigned char (&bytes)[size]) {
+		return Execute(location, bytes, size);
+	}
     bool Restore();
 };
 #endif
@@ -82,14 +87,14 @@ inline T VMT(void* ptr, int index)
 template <typename T = uintptr_t>
 inline T Read(uintptr_t source)
 {
-    auto rel = *reinterpret_cast<int*>(source);
-    return (T)(source + rel + sizeof(rel));
+    auto rel = *reinterpret_cast<int32_t*>(source);
+    return (T)(source + rel + sizeof(int32_t));
 }
 template <typename T = uintptr_t>
 void Read(uintptr_t source, T* destination)
 {
-    auto rel = *reinterpret_cast<int*>(source);
-    *destination = (T)(source + rel + sizeof(rel));
+    auto rel = *reinterpret_cast<int32_t*>(source);
+    *destination = (T)(source + rel + sizeof(int32_t));
 }
 template <typename T = void*>
 inline T Deref(uintptr_t source)
@@ -99,17 +104,11 @@ inline T Deref(uintptr_t source)
 template <typename T = void*>
 void Deref(uintptr_t source, T* destination)
 {
+#ifdef __x86_64
+    *destination = Read<T>(source);
+#else
     *destination = *reinterpret_cast<T*>(source);
-}
-template <typename T = void*>
-inline T DerefDeref(uintptr_t source)
-{
-    return **reinterpret_cast<T**>(source);
-}
-template <typename T = void*>
-void DerefDeref(uintptr_t source, T* destination)
-{
-    *destination = **reinterpret_cast<T**>(source);
+#endif
 }
 template <typename T = uintptr_t>
 T Scan(const char* moduleName, const char* pattern, int offset = 0)

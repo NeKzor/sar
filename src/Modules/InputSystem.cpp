@@ -31,18 +31,20 @@ bool InputSystem::Init()
     if (this->g_InputSystem) {
         this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
+        if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
             this->g_InputSystem->Hook(InputSystem::SleepUntilInput_Hook, InputSystem::SleepUntilInput, Offsets::SleepUntilInput);
         }
     }
 
+#ifndef _WIN32
     auto unbind = Command("unbind");
     if (!!unbind) {
         auto cc_unbind_callback = (uintptr_t)unbind.ThisPtr()->m_pCommandCallback;
         this->KeySetBinding = Memory::Read<_KeySetBinding>(cc_unbind_callback + Offsets::Key_SetBinding);
     }
+#endif
 
-    return this->hasLoaded = this->g_InputSystem && !!unbind;
+    return this->hasLoaded = !!this->g_InputSystem;
 }
 void InputSystem::Shutdown()
 {

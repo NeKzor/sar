@@ -34,7 +34,7 @@ private:
     float savedVerticalVelocity = 0.0f;
     bool callFromCheckJumpButton = false;
     bool paused = false;
-    int pauseTick;
+    int pauseTick = 0;
 
 public:
     DECL_M(GetPortals, int);

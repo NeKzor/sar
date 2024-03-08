@@ -193,9 +193,6 @@
     <ClCompile Include="Offsets.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Plugin.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
     <ClCompile Include="SAR.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -318,6 +315,15 @@
     </ClCompile>
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\PortalRevolution.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\PortalRevolution.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\VphysHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -537,9 +543,6 @@
     <ClInclude Include="Offsets.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Plugin.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
     <ClInclude Include="SAR.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -665,6 +668,15 @@
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\PortalRevolution.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalRevolution.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

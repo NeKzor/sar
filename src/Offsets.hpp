@@ -31,6 +31,7 @@ extern int HudProcessInput;
 extern int HudUpdate;
 extern int IN_ActivateMouse;
 extern int JoyStickApplyMovement;
+extern int OnDemoPlaybackStart;
 
 // ClientModeShared
 extern int CreateMove;
@@ -114,6 +115,8 @@ extern int m_nWaterLevel;
 extern int m_bDucked;
 extern int m_flFriction;
 extern int m_pSurfaceData;
+extern int m_pShadowCrouch;
+extern int m_pShadowStand;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
@@ -173,13 +176,27 @@ extern int OnGameOverlayActivated;
 // surfacedata_t
 extern int jumpFactor;
 
+// IPhysicsObject
+extern int IsAsleep;
+extern int IsCollisionEnabled;
+extern int IsGravityEnabled;
+extern int GetPosition;
+extern int GetVelocity;
+extern int SetPosition;
+extern int SetVelocity;
+extern int EnableGravity;
+extern int Wake;
+extern int Sleep;
+
 // Others
+extern int g_ClientGlobalVariables;
 extern int tickcount;
 extern int interval_per_tick;
 extern int GetClientStateFunction;
 extern int cl;
 extern int demoplayer;
 extern int demorecorder;
+extern int sv;
 extern int m_szLevelName;
 extern int AirMove_Offset1;
 extern int AirMove_Offset2;
@@ -215,6 +232,7 @@ extern int CUserCmdSize;
 extern int MULTIPLAYER_BACKUP;
 extern int PerUserInput_tSize;
 extern int GetLocalClient;
+extern int g_SplitScreenMgr;
 extern int MAX_SPLITSCREEN_PLAYERS;
 extern int net_time;
 }

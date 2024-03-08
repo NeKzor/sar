@@ -7,13 +7,6 @@
 #include "Utils/Memory.hpp"
 #include "Utils/SDK.hpp"
 
-#define CreateInterfaceInternal_Offset 5
-#ifdef _WIN32
-#define s_pInterfaceRegs_Offset 6
-#else
-#define s_pInterfaceRegs_Offset 11
-#endif
-
 Interface::Interface()
     : baseclass(nullptr)
     , vtable(nullptr)
@@ -95,38 +88,43 @@ void* Interface::GetPtr(const char* filename, const char* interfaceSymbol)
 {
     auto handle = Memory::GetModuleHandleByName(filename);
     if (!handle) {
-        console->DevWarning("SAR: Failed to open module %s!\n", filename);
+        console->DevWarning("Failed to open module %s!\n", filename);
         return nullptr;
     }
 
+#if _WIN64
     auto CreateInterface = Memory::GetSymbolAddress<uintptr_t>(handle, "CreateInterface");
     Memory::CloseModuleHandle(handle);
 
     if (!CreateInterface) {
-        console->DevWarning("SAR: Failed to find symbol CreateInterface for %s!\n", filename);
+        console->DevWarning("Failed to find symbol CreateInterface for %s!\n", filename);
         return nullptr;
     }
 
-#ifdef _WIN32
-    auto obe = Memory::Deref<uint8_t>(CreateInterface) == 0xE9; // jmp
+    auto s_pInterfaceRegsPtr = Memory::Read<InterfaceReg**>(CreateInterface + 3);
 #else
-    auto obe = false;
+    auto s_pInterfaceRegsPtr = Memory::GetSymbolAddress<InterfaceReg**>(handle, "s_pInterfaceRegs");
+    Memory::CloseModuleHandle(handle);
 #endif
 
-    auto CreateInterfaceInternal = Memory::Read(CreateInterface + (obe ? 1 : CreateInterfaceInternal_Offset));
-    auto s_pInterfaceRegs = Memory::DerefDeref<InterfaceReg*>(CreateInterfaceInternal + (obe ? 3 : s_pInterfaceRegs_Offset));
+    if (!s_pInterfaceRegsPtr) {
+        console->Error("Failed to find s_pInterfaceRegs!\n");
+        return nullptr;
+    }
+
+    auto s_pInterfaceRegs = *s_pInterfaceRegsPtr;
 
     void* result = nullptr;
     for (auto& current = s_pInterfaceRegs; current; current = current->m_pNext) {
         if (std::strncmp(current->m_pName, interfaceSymbol, std::strlen(interfaceSymbol)) == 0) {
             result = current->m_CreateFn();
-            //console->DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
+            //console->DevMsg("Found interface %s at %p in %s!\n", current->m_pName, result, filename);
             break;
         }
     }
 
     if (!result) {
-        console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
+        console->DevWarning("Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
         return nullptr;
     }
     return result;

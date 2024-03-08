@@ -30,7 +30,7 @@ void ReplayPlayer::Play(Replay* replay, CUserCmd* cmd)
             this->isPlaying = false;
         }
     } else {
-        auto frame = view->frames[view->playIndex];
+        auto& frame = view->frames[view->playIndex];
 
         cmd->viewangles = frame.viewangles;
         cmd->forwardmove = frame.forwardmove;
@@ -55,7 +55,7 @@ void ReplayPlayer::StopPlaying()
 {
     this->isPlaying = false;
 }
-bool ReplayPlayer::IsPlaying()
+bool ReplayPlayer::IsPlaying() const
 {
     return this->isPlaying;
 }

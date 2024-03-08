@@ -1,5 +1,8 @@
 #include "Engine.hpp"
 
+#include "Offsets.hpp"
+#include "Utils/Memory.hpp"
+#include <cstdint>
 #include <cstring>
 
 #include "Features/Cvars.hpp"
@@ -27,8 +30,6 @@ REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
-REDECL(Engine::plugin_load_callback);
-REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
@@ -45,13 +46,13 @@ REDECL(Engine::ReadCustomData);
 
 void Engine::ExecuteCommand(const char* cmd)
 {
-    this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+    this->SendToCommandBuffer(cmd, 0);
 }
-int Engine::GetTick()
+int Engine::GetTick() const
 {
     return (this->GetMaxClients() < 2) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
-float Engine::ToTime(int tick)
+float Engine::ToTime(int tick) const
 {
     return tick * *this->interval_per_tick;
 }
@@ -99,7 +100,7 @@ void Engine::SetAngles(int nSlot, QAngle va)
 }
 void Engine::SendToCommandBuffer(const char* text, int delay)
 {
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
+    if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
 #ifdef _WIN32
         auto slot = this->GetActiveSplitScreenPlayerSlot();
 #else
@@ -110,7 +111,7 @@ void Engine::SendToCommandBuffer(const char* text, int delay)
         this->AddText(this->s_CommandBuffer, text, delay);
     }
 }
-int Engine::PointToScreen(const Vector& point, Vector& screen)
+int Engine::PointToScreen(const Vector& point, Vector& screen) const
 {
 #ifdef _WIN32
     return this->ScreenPosition(point, screen);
@@ -182,7 +183,7 @@ DETOUR(Engine::Frame)
     return Engine::Frame(thisptr);
 }
 
-#ifdef _WIN32
+#if _WIN32 && !__x86_64
 // CDemoFile::ReadCustomData
 void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
 {
@@ -224,31 +225,6 @@ DETOUR_B(Engine::OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayAct
     return Engine::OnGameOverlayActivatedBase(thisptr, pGameOverlayActivated);
 }
 
-DETOUR_COMMAND(Engine::plugin_load)
-{
-    // Prevent crash when trying to load SAR twice or try to find the module in
-    // the plugin list if the initial search thread failed
-    if (args.ArgC() >= 2) {
-        auto file = std::string(args[1]);
-        if (Utils::EndsWith(file, std::string(MODULE("sar"))) || Utils::EndsWith(file, std::string("sar"))) {
-            if (sar.GetPlugin()) {
-                sar.plugin->ptr->m_bDisable = true;
-                console->PrintActive("SAR: Plugin fully loaded!\n");
-            }
-            return;
-        }
-    }
-
-    Engine::plugin_load_callback(args);
-}
-DETOUR_COMMAND(Engine::plugin_unload)
-{
-    if (args.ArgC() >= 2 && sar.GetPlugin() && std::atoi(args[1]) == sar.plugin->index) {
-        engine->SafeUnload();
-    } else {
-        engine->plugin_unload_callback(args);
-    }
-}
 DETOUR_COMMAND(Engine::exit)
 {
     engine->SafeUnload("exit");
@@ -273,7 +249,6 @@ DETOUR_COMMAND(Engine::gameui_activate)
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
-    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS0", false);
 
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
@@ -287,7 +262,7 @@ bool Engine::Init()
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
+        if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
             Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
 
             if (sar.game->Is(SourceGame_Portal2Game | SourceGame_INFRA)) {
@@ -318,9 +293,18 @@ bool Engine::Init()
             this->GetActiveSplitScreenPlayerSlot = this->engineClient->Original<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
         } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             auto ServerCmdKeyValues = this->engineClient->Original(Offsets::ServerCmdKeyValues);
-            clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
+            Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl, &clPtr);
 
             Memory::Read<_AddText>((uintptr_t)this->Cbuf_AddText + Offsets::AddText, &this->AddText);
+        } else if (sar.game->Is(SourceGame_StrataEngine)) {
+            typedef void* (*_GetClientState)();
+            auto GetClientState = Memory::Read<_GetClientState>((uintptr_t)this->ClientCmd + Offsets::GetClientStateFunction);
+            clPtr = GetClientState();
+
+            if (this->GetLocalClient) {
+                auto g_SplitScreenMgr = Memory::Read<void*>((uintptr_t)this->GetLocalClient + Offsets::g_SplitScreenMgr);
+                this->GetActiveSplitScreenPlayerSlot = Memory::VMT<_GetActiveSplitScreenPlayerSlot>(g_SplitScreenMgr, Offsets::GetActiveSplitScreenPlayerSlot);
+            }
         }
 
         if (this->cl = Interface::Create(clPtr)) {
@@ -329,7 +313,7 @@ bool Engine::Init()
             if (!this->demorecorder)
                 this->demorecorder = new EngineDemoRecorder();
 
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
+            if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
                 this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);
                 this->cl->Hook(Engine::Disconnect_Hook, Engine::Disconnect, Offsets::Disconnect);
             } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
@@ -340,38 +324,61 @@ bool Engine::Init()
                 this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
 #endif
             }
-#if _WIN32
+#if _WIN32 && !__x86_64
             auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)this->cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
 #else
             auto ProcessTick = this->cl->Original(Offsets::ProcessTick);
 #endif
-            tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
-            interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
-            speedrun->SetIntervalPerTick(interval_per_tick);
 
-            auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
-            auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
-            Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
+            if (sar.game->Is(SourceGame_StrataEngine)) {
+                if (IS_LINUX) {
+                    auto g_ClientGlobalVariables = Memory::Read(ProcessTick + Offsets::g_ClientGlobalVariables);
+                    this->tickcount = reinterpret_cast<int*>(g_ClientGlobalVariables + Offsets::tickcount);
+                    this->interval_per_tick = reinterpret_cast<float*>(g_ClientGlobalVariables + Offsets::interval_per_tick);
+                } else {
+                    Memory::Deref<int*>(ProcessTick + Offsets::tickcount, &this->tickcount);
+                    Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick, &this->interval_per_tick);
+                }
+
+                auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
+                Memory::Deref<CHostState*>(SetSignonState + Offsets::hoststate, &hoststate);
+            } else {
+                Memory::Deref<int*>(ProcessTick + Offsets::tickcount, &this->tickcount);
+                Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick, &this->interval_per_tick);
+
+                auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
+                auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
+                Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
+            }
+
+            speedrun->SetIntervalPerTick(this->interval_per_tick);
         }
     }
 
     if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
         auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
-        this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
+
+        if (sar.game->Is(SourceGame_StrataEngine) && IS_LINUX) {
+            auto sv = Memory::Read<uintptr_t>(GetCurrentMap + Offsets::sv);
+            this->m_szLevelName = reinterpret_cast<char*>(sv + Offsets::m_szLevelName);
+            this->m_bLoadgame = reinterpret_cast<bool*>(sv + Offsets::m_bLoadGame);
+        } else {
+            Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName, &this->m_szLevelName);
+            this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
+        }
 
         if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
-            console->Warning("SAR: DO NOT load this plugin when the server is active!\n");
+            console->Warning("DO NOT load this plugin when the server is active!\n");
             return false;
         }
 
-        this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
         Interface::Delete(tool);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
         auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-        auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
+        auto engAddr = *Memory::Read<void**>(IsRunningSimulation + Offsets::eng);
 
         if (this->eng = Interface::Create(engAddr)) {
             if (this->tickcount && this->hoststate && this->m_szLevelName) {
@@ -387,13 +394,15 @@ bool Engine::Init()
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
             this->RemoveListener = this->s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
 
-            auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
-            auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
-            Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
+            if (!sar.game->Is(SourceGame_StrataEngine)) {
+                auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
+                auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
+                Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
+            }
         }
     }
 
-#ifdef _WIN32
+#if _WIN32 && !__x86_64
     if (sar.game->Is(SourceGame_Portal2Game)) {
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
         auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
@@ -420,8 +429,6 @@ bool Engine::Init()
         Interface::Delete(debugoverlay);
     }
 
-    Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);
-    Command::Hook("plugin_unload", Engine::plugin_unload_callback_hook, Engine::plugin_unload_callback);
     Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
@@ -433,7 +440,7 @@ bool Engine::Init()
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
 
-    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
+    return this->hasLoaded = this->engineClient && this->demoplayer && this->demorecorder;
 }
 void Engine::Shutdown()
 {
@@ -444,7 +451,6 @@ void Engine::Shutdown()
     }
 
     Interface::Delete(this->engineClient);
-    Interface::Delete(this->s_ServerPlugin);
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
@@ -459,8 +465,6 @@ void Engine::Shutdown()
     }
     SAFE_DELETE(this->demoSmootherPatch)
 #endif
-    Command::Unhook("plugin_load", Engine::plugin_load_callback);
-    Command::Unhook("plugin_unload", Engine::plugin_unload_callback);
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);

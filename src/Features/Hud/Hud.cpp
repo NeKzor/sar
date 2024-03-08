@@ -17,7 +17,7 @@
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "1", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
-Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
+Variable sar_hud_default_font_index("sar_hud_default_font_index", "10", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
 
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
@@ -57,8 +57,7 @@ Hud::Hud(int type, bool drawSecondSplitScreen, int version)
 Color Hud::GetColor(const char* source)
 {
     int r, g, b, a;
-    std::sscanf(source, "%i%i%i%i", &r, &g, &b, &a);
-    return Color(r, g, b, a);
+    return std::sscanf(source, "%i%i%i%i", &r, &g, &b, &a) ? Color(r, g, b, a) : Color();
 }
 
 void HudContext::DrawElement(const char* fmt, ...)
@@ -90,8 +89,7 @@ void HudContext::Reset(int slot)
     this->fontSize = surface->GetFontHeight(font);
 
     int r, g, b, a;
-    sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
-    this->textColor = Color(r, g, b, a);
+    this->textColor = sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a) ? Color(r, g, b, a) : Color();
 }
 
 std::vector<HudElement*>& HudElement::GetList()
@@ -156,7 +154,7 @@ std::vector<std::string> elementOrder = {
 
 void HudElement::IndexAll()
 {
-    auto elements = HudElement::GetList();
+    auto& elements = HudElement::GetList();
     auto index = 0;
 
     for (const auto& name : elementOrder) {

@@ -54,7 +54,7 @@ SpeedrunTimer::SpeedrunTimer()
 
     this->hasLoaded = true;
 }
-bool SpeedrunTimer::IsActive()
+bool SpeedrunTimer::IsActive() const
 {
     return this->state == TimerState::Running
         || this->state == TimerState::Paused;
@@ -163,6 +163,7 @@ void SpeedrunTimer::CheckRules(const int engineTicks)
             this->Stop();
             source->madeAction = true;
         }
+        break;
     default:
         break;
     }
@@ -208,15 +209,15 @@ void SpeedrunTimer::IncrementPauseTime()
 {
     ++this->pause;
 }
-int SpeedrunTimer::GetSession()
+int SpeedrunTimer::GetSession() const
 {
     return this->session;
 }
-int SpeedrunTimer::GetTotal()
+int SpeedrunTimer::GetTotal() const
 {
     return this->total;
 }
-const char* SpeedrunTimer::GetCurrentMap()
+const char* SpeedrunTimer::GetCurrentMap() const
 {
     return (std::strlen(this->map) != 0) ? this->map : "menu";
 }
@@ -264,7 +265,7 @@ void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
     this->ipt = *ipt;
     this->pubInterface->SetIntervalPerTick(ipt);
 }
-const float SpeedrunTimer::GetIntervalPerTick()
+const float SpeedrunTimer::GetIntervalPerTick() const
 {
     return this->ipt;
 }
@@ -280,7 +281,7 @@ void SpeedrunTimer::SetOffset(const int offset)
 {
     this->offset = this->total = offset;
 }
-const int SpeedrunTimer::GetOffset()
+const int SpeedrunTimer::GetOffset() const
 {
     return this->offset;
 }

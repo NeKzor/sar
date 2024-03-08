@@ -31,6 +31,7 @@ int HudProcessInput;
 int HudUpdate;
 int IN_ActivateMouse;
 int JoyStickApplyMovement;
+int OnDemoPlaybackStart;
 
 // ClientModeShared
 int CreateMove;
@@ -114,6 +115,8 @@ int m_nWaterLevel;
 int m_bDucked;
 int m_flFriction;
 int m_pSurfaceData;
+int m_pShadowCrouch;
+int m_pShadowStand;
 
 // CPortal_Player
 int iNumPortalsPlaced;
@@ -173,13 +176,27 @@ int OnGameOverlayActivated;
 // surfacedata_t
 int jumpFactor;
 
+// IPhysicsObject
+int IsAsleep;
+int IsCollisionEnabled;
+int IsGravityEnabled;
+int GetPosition;
+int GetVelocity;
+int SetPosition;
+int SetVelocity;
+int EnableGravity;
+int Wake;
+int Sleep;
+
 // Others
+int g_ClientGlobalVariables;
 int tickcount;
 int interval_per_tick;
 int GetClientStateFunction;
 int cl;
 int demoplayer;
 int demorecorder;
+int sv;
 int m_szLevelName;
 int AirMove_Offset1;
 int AirMove_Offset2;
@@ -215,6 +232,7 @@ int CUserCmdSize;
 int MULTIPLAYER_BACKUP;
 int PerUserInput_tSize;
 int GetLocalClient;
+int g_SplitScreenMgr;
 int MAX_SPLITSCREEN_PLAYERS;
 int net_time;
 }

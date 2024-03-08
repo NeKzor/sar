@@ -14,6 +14,7 @@
 #include "Utils/Memory.hpp"
 #include "Utils/SDK.hpp"
 
+#include "Game.hpp"
 #include "SAR.hpp"
 
 #ifdef _WIN32
@@ -21,10 +22,15 @@ PATTERN(DATAMAP_PATTERN1, "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? 
 PATTERN(DATAMAP_PATTERN2, "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C3", 6, 12);
 PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2);
 #else
+#ifdef __x86_64
+PATTERN(DATAMAP_PATTERN1, "48 8D 05 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? 48 8D 0D ? ? ? ? 48 89 0D", 13, 3);
+PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1);
+#else
 PATTERN(DATAMAP_PATTERN1, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
 PATTERN(DATAMAP_PATTERN2, "C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 6, 11);
 PATTERN(DATAMAP_PATTERN3, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? 89 E5 5D C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
 PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2, &DATAMAP_PATTERN3);
+#endif
 #endif
 
 DataMapDumper* dataMapDumper;
@@ -49,8 +55,12 @@ void DataMapDumper::Dump(bool dumpServer)
 
     file << "{\"data\":[";
 
+    auto embeddedType = sar.game->Is(SourceGame_StrataEngine)
+        ? (uint32_t)StrataEngine_fieldtype_t::EMBEDDED
+        : (uint32_t)fieldtype_t::EMBEDDED;
+
     std::function<void(datamap_t * map)> DumpMap;
-    DumpMap = [&DumpMap, &file](datamap_t* map) {
+    DumpMap = [&DumpMap, &file, &embeddedType](datamap_t* map) {
         file << "{\"type\":\"" << map->dataClassName << "\",\"fields\":[";
         while (map) {
             for (auto i = 0; i < map->dataNumFields; ++i) {
@@ -62,17 +72,17 @@ void DataMapDumper::Dump(bool dumpServer)
                     file << "\"name\":\"" << field->fieldName << "\",";
                 }
 
-                file << "\"offset\":" << field->fieldOffset[0];
+                file << "\"offset\":" << std::to_string(field->fieldOffset[0]);
 
                 if (field->externalName) {
                     file << ",\"external\":\"" << field->externalName << "\"";
                 }
 
-                if (field->fieldType == FIELD_EMBEDDED) {
+                if ((uint32_t)field->fieldType == embeddedType) {
                     file << ",\"type\":";
                     DumpMap(field->td);
                 } else {
-                    file << ",\"type\":" << field->fieldType;
+                    file << ",\"type\":" << std::to_string((uint32_t)field->fieldType);
                 }
 
                 file << "},";
@@ -83,7 +93,7 @@ void DataMapDumper::Dump(bool dumpServer)
         file << "]}";
     };
     std::function<void(datamap_t2 * map)> DumpMap2;
-    DumpMap2 = [&DumpMap2, &file](datamap_t2* map) {
+    DumpMap2 = [&DumpMap2, &file, &embeddedType](datamap_t2* map) {
         file << "{\"type\":\"" << map->dataClassName << "\",\"fields\":[";
         while (map) {
             for (auto i = 0; i < map->dataNumFields; ++i) {
@@ -95,17 +105,17 @@ void DataMapDumper::Dump(bool dumpServer)
                     file << "\"name\":\"" << field->fieldName << "\",";
                 }
 
-                file << "\"offset\":" << field->fieldOffset;
+                file << "\"offset\":" << std::to_string(field->fieldOffset);
 
                 if (field->externalName) {
                     file << ",\"external\":\"" << field->externalName << "\"";
                 }
 
-                if (field->fieldType == FIELD_EMBEDDED) {
+                if ((uint32_t)field->fieldType == embeddedType && field->td) {
                     file << ",\"type\":";
                     DumpMap2(field->td);
                 } else {
-                    file << ",\"type\":" << field->fieldType;
+                    file << ",\"type\":" << std::to_string((uint32_t)field->fieldType);
                 }
 
                 file << "},";
@@ -118,21 +128,23 @@ void DataMapDumper::Dump(bool dumpServer)
 
     auto results = (dumpServer) ? &this->serverResult : &this->clientResult;
     if (results->empty()) {
-        auto hl2 = sar.game->Is(SourceGame_HalfLife2Engine);
         auto moduleName = (dumpServer) ? server->Name() : client->Name();
 
         *results = Memory::MultiScan(moduleName, &DATAMAP_PATTERNS);
-        for (auto const& result : *results) {
-            auto num = Memory::Deref<int>(result[0]);
-            if (num > 0 && num < 1000) {
-                auto ptr = Memory::Deref<void*>(result[1]);
-                if (hl2) {
-                    DumpMap(reinterpret_cast<datamap_t*>(ptr));
-                } else {
-                    DumpMap2(reinterpret_cast<datamap_t2*>(ptr));
-                }
-                file << ",";
+    }
+
+    auto hl2 = sar.game->Is(SourceGame_HalfLife2Engine);
+
+    for (auto const& result : *results) {
+        auto num = Memory::Deref<int>(result[0]);
+        if (num > 0 && num < 1000) {
+            auto ptr = Memory::Read<void*>(result[1]);
+            if (hl2) {
+                DumpMap(reinterpret_cast<datamap_t*>(ptr));
+            } else {
+                DumpMap2(reinterpret_cast<datamap_t2*>(ptr));
             }
+            file << ",";
         }
     }
 

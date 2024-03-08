@@ -87,6 +87,8 @@ void Rebinder::UpdateIndex(int newIndex)
 
 // Commands
 
+#ifndef _WIN32
+
 CON_COMMAND(sar_bind_save,
     "Automatic save rebinding when server has loaded.\n"
     "File indexing will be synced when recording demos.\n"
@@ -151,3 +153,5 @@ CON_COMMAND(sar_unbind_reload,
 
     rebinder->ResetReloadBind();
 }
+
+#endif

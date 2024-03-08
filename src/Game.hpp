@@ -19,9 +19,15 @@ enum SourceGameVersion {
     SourceGame_HalfLife2Episodic = (1 << 9),
     SourceGame_HalfLifeSource = (1 << 10),
 
+    SourceGame_Portal2CommunityEdition = (1 << 11),
+    SourceGame_PortalRevolution = (1 << 12),
+
     SourceGame_Portal2Game = SourceGame_Portal2 | SourceGame_ApertureTag | SourceGame_PortalStoriesMel | SourceGame_ThinkingWithTimeMachine,
     SourceGame_Portal2Engine = SourceGame_Portal2Game | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide | SourceGame_INFRA,
     SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2 | SourceGame_HalfLife2Episodic | SourceGame_HalfLifeSource,
+
+    SourceGame_StrataEngine = SourceGame_Portal2CommunityEdition | SourceGame_PortalRevolution,
+    SourceGame_StrataPortal2Game = SourceGame_Portal2CommunityEdition | SourceGame_PortalRevolution,
 
     SourceGame_SupportsS3 = SourceGame_Portal2Game | SourceGame_Portal,
 };

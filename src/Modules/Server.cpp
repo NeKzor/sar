@@ -244,7 +244,7 @@ DETOUR_B(Server::AirMove)
 
     return Server::AirMove(thisptr);
 }
-#ifdef _WIN32
+#if _WIN32 && !__x86_64
 DETOUR_MID_MH(Server::AirMove_Mid)
 {
     __asm {
@@ -347,28 +347,34 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
+        if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
             this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
             auto ctor = this->g_GameMovement->Original(0);
-            auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
-            auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
-            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
+            auto baseOffset = uintptr_t();
 
-            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
+            if (sar.game->Is(SourceGame_StrataEngine) && IS_LINUX) {
+                baseOffset = Memory::Read(ctor + Offsets::AirMove_Offset1);
+            } else {
+                auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
+                Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2, &baseOffset);
+            }
 
-#ifdef _WIN32
+            Server::AirMoveBase = Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t));
+            Server::CheckJumpButtonBase = Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t));
+
+#if _WIN32 && !__x86_64
             if (!sar.game->Is(SourceGame_INFRA)) {
                 auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
                 if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
                     MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
                     this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
                     this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-                    console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
+                    console->DevMsg("Verified sar_aircontrol 1!\n");
                 } else {
-                    console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+                    console->Warning("Failed to enable sar_aircontrol 1 style!\n");
                 }
             }
 #endif
@@ -384,12 +390,12 @@ bool Server::Init()
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
         Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
-        Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
+        this->gpGlobals = *Memory::Read<CGlobalVars**>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
         this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
-        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
+        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal | SourceGame_StrataPortal2Game)) {
             this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
         }
     }
@@ -401,12 +407,12 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
 
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
+    if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
         offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
     }
 
-    if (sar.game->Is(SourceGame_Portal2Game)) {
+    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_StrataPortal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     }
 

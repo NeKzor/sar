@@ -24,6 +24,10 @@ int RandomNumber(const int& min, const int& max);
 inline void Math::SinCos(float radians, float* sine, float* cosine)
 {
 #ifdef _WIN32
+#ifdef __x86_64
+    *sine = std::sinf(radians);
+    *cosine = std::cosf(radians);
+#else
     _asm {
         fld DWORD PTR[radians]
         fsincos
@@ -34,6 +38,7 @@ inline void Math::SinCos(float radians, float* sine, float* cosine)
         fstp DWORD PTR[edx]
         fstp DWORD PTR[eax]
     }
+#endif
 #else
     double __cosr, __sinr;
     __asm("fsincos"

@@ -44,7 +44,7 @@ public:
 public:
     SpeedrunTimer();
 
-    bool IsActive();
+    bool IsActive() const;
 
     void Start(const int engineTicks);
     void Pause();
@@ -58,18 +58,18 @@ public:
 
     void IncrementPauseTime();
 
-    int GetSession();
-    int GetTotal();
-    const char* GetCurrentMap();
+    int GetSession() const;
+    int GetTotal() const;
+    const char* GetCurrentMap() const;
 
     void SetIntervalPerTick(const float* ipt);
-    const float GetIntervalPerTick();
+    const float GetIntervalPerTick() const;
 
     void SetCategory(TimerCategory* category);
     TimerCategory* GetCategory();
 
     void SetOffset(const int offset);
-    const int GetOffset();
+    const int GetOffset() const;
 
     void LoadRules(Game* game);
     void InitRules();

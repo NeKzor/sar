@@ -1,5 +1,6 @@
 #include "EntityList.hpp"
 
+#include "Game.hpp"
 #include <algorithm>
 #include <cstring>
 
@@ -18,7 +19,7 @@ EntityList::EntityList()
 }
 CEntInfo* EntityList::GetEntityInfoByIndex(int index)
 {
-    auto size = sar.game->Is(SourceGame_Portal2Engine)
+    auto size = sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)
         ? sizeof(CEntInfo2)
         : sizeof(CEntInfo);
     return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);

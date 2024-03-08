@@ -8,7 +8,8 @@
 
 bool Tier1::Init()
 {
-    this->g_pCVar = Interface::Create(this->Name(), "VEngineCvar0", false);
+    //this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x18DAE8));
+    this->g_pCVar = Interface::Create(this->Name(), "VEngineCvar0");
     if (this->g_pCVar) {
         this->RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
         this->UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
@@ -33,7 +34,7 @@ bool Tier1::Init()
 
             auto vtable =
 #ifdef _WIN32
-            sar.game->Is(SourceGame_HalfLife2Engine)
+            sar.game->Is(SourceGame_HalfLife2Engine | SourceGame_StrataEngine)
                 ? &this->ConVar_VTable
                 : &this->ConVar_VTable2;
 #else

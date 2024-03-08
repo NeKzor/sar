@@ -1,12 +1,21 @@
 #pragma once
+#include <cstddef>
 #pragma warning(suppress : 26495)
 #include <cmath>
 #include <cstdint>
 
 #ifdef _WIN32
+#if __x86_64
+#define __rescalll __fastcall
+#else
 #define __rescalll __thiscall
+#endif
+#else
+#if __x86_64
+#define __rescalll __attribute__((__fastcall__))
 #else
 #define __rescalll __attribute__((__cdecl__))
+#endif
 #endif
 
 struct Vector {
@@ -88,6 +97,7 @@ struct Color {
 #define FCVAR_HIDDEN (1 << 4)
 #define FCVAR_NEVER_AS_STRING (1 << 12)
 #define FCVAR_CHEAT (1 << 14)
+#define FCVAR_CLIENTCMD_CAN_EXECUTE (1 << 30)
 
 #define COMMAND_COMPLETION_MAXITEMS 64
 #define COMMAND_COMPLETION_ITEM_LENGTH 64
@@ -96,6 +106,7 @@ struct CCommand;
 struct ConCommandBase;
 
 typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOldValue);
+typedef void (*FnChangeCallback2_t)(void* var, const char* pNewValue);
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
@@ -122,12 +133,12 @@ public:
 };
 
 struct ConCommandBase {
-    void* ConCommandBase_VTable; // 0
-    ConCommandBase* m_pNext; // 4
-    bool m_bRegistered; // 8
-    const char* m_pszName; // 12
-    const char* m_pszHelpString; // 16
-    int m_nFlags; // 20
+    void* ConCommandBase_VTable; // 0 | 0
+    ConCommandBase* m_pNext; // 4 | 8
+    bool m_bRegistered; // 8 | 16
+    const char* m_pszName; // 12 | 24
+    const char* m_pszHelpString; // 16 | 32
+    int m_nFlags; // 20 | 40
 
     ConCommandBase(const char* name, int flags, const char* helpstr)
         : ConCommandBase_VTable(nullptr)
@@ -192,37 +203,6 @@ struct ConCommand : ConCommandBase {
     }
 };
 
-struct ConVar : ConCommandBase {
-    void* ConVar_VTable; // 24
-    ConVar* m_pParent; // 28
-    const char* m_pszDefaultValue; // 32
-    char* m_pszString; // 36
-    int m_StringLength; // 40
-    float m_fValue; // 44
-    int m_nValue; // 48
-    bool m_bHasMin; // 52
-    float m_fMinVal; // 56
-    bool m_bHasMax; // 60
-    float m_fMaxVal; // 64
-    FnChangeCallback_t m_fnChangeCallback; // 68
-
-    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
-        : ConCommandBase(name, flags, helpstr)
-        , ConVar_VTable(nullptr)
-        , m_pParent(nullptr)
-        , m_pszDefaultValue(value)
-        , m_pszString(nullptr)
-        , m_fValue(0.0f)
-        , m_nValue(0)
-        , m_bHasMin(hasmin)
-        , m_fMinVal(min)
-        , m_bHasMax(hasmax)
-        , m_fMaxVal(max)
-        , m_fnChangeCallback(nullptr)
-    {
-    }
-};
-
 template <class T, class I = int>
 struct CUtlMemory {
     T* m_pMemory;
@@ -236,27 +216,37 @@ struct CUtlVector {
     int m_Size;
     T* m_pElements;
 };
+static_assert(sizeof(CUtlVector<FnChangeCallback2_t>) == 32);
+static_assert(offsetof(CUtlVector<FnChangeCallback2_t>, m_Size) == 16);
 
-struct ConVar2 : ConCommandBase {
-    void* ConVar_VTable; // 24
-    ConVar2* m_pParent; // 28
-    const char* m_pszDefaultValue; // 32
-    char* m_pszString; // 36
-    int m_StringLength; // 40
-    float m_fValue; // 44
-    int m_nValue; // 48
-    bool m_bHasMin; // 52
-    float m_fMinVal; // 56
-    bool m_bHasMax; // 60
-    float m_fMaxVal; // 64
-    CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
+template <class T>
+struct ConVarChangeCallbackWrapper {
+    void* unk_0;
+    T* callback;
+};
 
-    ConVar2(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+struct ConVar : ConCommandBase {
+    void* ConVar_VTable; // 24 | 48
+    ConVar* m_pParent; // 28 | 56
+    const char* m_pszDefaultValue; // 32 | 64
+    char* m_pszString; // 36 | 72
+    int m_StringLength; // 40 | 80
+    float m_fValue; // 44 | 84
+    int m_nValue; // 48 | 88
+    bool m_bHasMin; // 52 | 92
+    float m_fMinVal; // 56 | 96
+    bool m_bHasMax; // 60 | 100
+    float m_fMaxVal; // 64 | 104
+    CUtlVector<ConVarChangeCallbackWrapper<FnChangeCallback_t>> m_fnChangeCallback; // 68 | 112
+    CUtlVector<ConVarChangeCallbackWrapper<FnChangeCallback2_t>> m_fnChangeCallback2; // 144
+
+    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
         : ConCommandBase(name, flags, helpstr)
         , ConVar_VTable(nullptr)
         , m_pParent(nullptr)
         , m_pszDefaultValue(value)
         , m_pszString(nullptr)
+        , m_StringLength(0)
         , m_fValue(0.0f)
         , m_nValue(0)
         , m_bHasMin(hasmin)
@@ -264,9 +254,17 @@ struct ConVar2 : ConCommandBase {
         , m_bHasMax(hasmax)
         , m_fMaxVal(max)
         , m_fnChangeCallback()
+        , m_fnChangeCallback2()
     {
     }
 };
+static_assert(sizeof(ConVar) == 176);
+
+struct CSplitScreenAddedConVar : ConVar {
+    ConVar* m_pBaseVar; // 176
+    int m_nSplitScreenSlot; // 184
+};
+static_assert(sizeof(CSplitScreenAddedConVar) == 192);
 
 #define SIGNONSTATE_NONE 0
 #define SIGNONSTATE_CHALLENGE 1
@@ -277,6 +275,26 @@ struct ConVar2 : ConCommandBase {
 #define SIGNONSTATE_FULL 6
 #define SIGNONSTATE_CHANGELEVEL 7
 
+#ifdef __x86_64
+struct CUserCmd {
+    void* VMT;
+    int command_number;
+    int tick_count;
+    QAngle viewangles;
+    Vector aimdirection;
+    float forwardmove;
+    float sidemove;
+    float upmove;
+    int buttons;
+    unsigned char impulse;
+    int weaponselect;
+    int weaponsubtype;
+    int random_seed;
+    short mousedx;
+    short mousedy;
+    bool hasbeenpredicted;
+};
+#else
 struct CUserCmd {
     void* VMT; // 0
     int command_number; // 4
@@ -294,13 +312,14 @@ struct CUserCmd {
     short mousedy; // 58
     bool hasbeenpredicted; // 60
 };
+#endif
 
 #define GAMEMOVEMENT_JUMP_HEIGHT 21.0f
 
 struct CMoveData {
     bool m_bFirstRunOfFunctions : 1; // 0
     bool m_bGameCodeMovedPlayer : 1; // 2
-    void* m_nPlayerHandle; // 4
+    int m_nPlayerHandle; // 4
     int m_nImpulseCommand; // 8
     QAngle m_vecViewAngles; // 12, 16, 20
     QAngle m_vecAbsViewAngles; // 24, 28, 32
@@ -375,6 +394,9 @@ typedef enum {
 } HOSTSTATES;
 
 struct CHostState {
+#ifdef _WIN64
+    void* vtable;
+#endif
     int m_currentState; // 0
     int m_nextState; // 4
     Vector m_vecLocation; // 8, 12, 16
@@ -624,38 +646,74 @@ struct ServerClass {
     int m_InstanceBaselineIndex;
 };
 
-typedef enum _fieldtypes {
-    FIELD_VOID = 0,
-    FIELD_FLOAT,
-    FIELD_STRING,
-    FIELD_VECTOR,
-    FIELD_QUATERNION,
-    FIELD_INTEGER,
-    FIELD_BOOLEAN,
-    FIELD_SHORT,
-    FIELD_CHARACTER,
-    FIELD_COLOR32,
-    FIELD_EMBEDDED,
-    FIELD_CUSTOM,
-    FIELD_CLASSPTR,
-    FIELD_EHANDLE,
-    FIELD_EDICT,
-    FIELD_POSITION_VECTOR,
-    FIELD_TIME,
-    FIELD_TICK,
-    FIELD_MODELNAME,
-    FIELD_SOUNDNAME,
-    FIELD_INPUT,
-    FIELD_FUNCTION,
-    FIELD_VMATRIX,
-    FIELD_VMATRIX_WORLDSPACE,
-    FIELD_MATRIX3X4_WORLDSPACE,
-    FIELD_INTERVAL,
-    FIELD_MODELINDEX,
-    FIELD_MATERIALINDEX,
-    FIELD_VECTOR2D,
-    FIELD_TYPECOUNT
-} fieldtype_t;
+enum class fieldtype_t {
+    Void = 0,
+    FLOAT,
+    STRING,
+    VECTOR,
+    QUATERNION,
+    INTEGER,
+    BOOLEAN,
+    SHORT,
+    CHARACTER,
+    COLOR32,
+    EMBEDDED,
+    CUSTOM,
+    CLASSPTR,
+    EHANDLE,
+    EDICT,
+    POSITION_VECTOR,
+    TIME,
+    TICK,
+    MODELNAME,
+    SOUNDNAME,
+    INPUT,
+    FUNCTION,
+    VMATRIX,
+    VMATRIX_WORLDSPACE,
+    MATRIX3X4_WORLDSPACE,
+    INTERVAL,
+    MODELINDEX,
+    MATERIALINDEX,
+    VECTOR2D,
+    TYPECOUNT,
+};
+
+enum class StrataEngine_fieldtype_t {
+    Void = 0,
+    FLOAT,
+    STRING,
+    VECTOR,
+    VECTOR2D,
+    VECTOR4D,
+    QUATERNION,
+    INTEGER,
+    INTEGER64,
+    BOOLEAN,
+    SHORT,
+    CHARACTER,
+    COLOR32,
+    COLOR64,
+    EMBEDDED,
+    CUSTOM,
+    CLASSPTR,
+    EHANDLE,
+    EDICT,
+    POSITION_VECTOR,
+    TIME,
+    TICK,
+    MODELNAME,
+    SOUNDNAME,
+    INPUT,
+    FUNCTION,
+    VMATRIX,
+    VMATRIX_WORLDSPACE,
+    MATRIX3X4_WORLDSPACE,
+    INTERVAL,
+    MODELINDEX,
+    MATERIALINDEX,
+    TYPECOUNT,
+};
 
 enum {
     TD_OFFSET_NORMAL = 0,
@@ -688,18 +746,18 @@ struct typedescription_t {
 
 struct datamap_t2;
 struct typedescription_t2 {
-    fieldtype_t fieldType; // 0
-    const char* fieldName; // 4
-    int fieldOffset; // 8
-    unsigned short fieldSize; // 12
-    short flags; // 14
-    const char* externalName; // 16
+    fieldtype_t fieldType; // 0 | 0
+    const char* fieldName; // 4 | 8
+    int fieldOffset; // 8 | 16
+    unsigned short fieldSize; // 12 | 20
+    short flags; // 14 | 22
+    const char* externalName; // 16 | 24
     void* pSaveRestoreOps; // 20
 #ifndef _WIN32
     void* unk1; // 24
 #endif
     inputfunc_t inputFunc; // 24/28
-    datamap_t2* td; // 28/32
+    datamap_t2* td; // 28/32 | 56
     int fieldSizeInBytes; // 32/36
     struct typedescription_t2* override_field; // 36/40
     int override_count; // 40/44
@@ -719,10 +777,10 @@ struct datamap_t {
 };
 
 struct datamap_t2 {
-    typedescription_t2* dataDesc; // 0
-    int dataNumFields; // 4
-    char const* dataClassName; // 8
-    datamap_t2* baseMap; // 12
+    typedescription_t2* dataDesc; // 0 | 8
+    int dataNumFields; // 4 | 8
+    char const* dataClassName; // 8 | 16
+    datamap_t2* baseMap; // 12 | 24
     int m_nPackedSize; // 16
     void* m_pOptimizedDataMap; // 20
 };

@@ -130,7 +130,7 @@ float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, cons
     if (strafe->type == StrafingType::Turning && !grounded) {
         cosTheta = (playerFriction * tau * M * A) / (2 * velocity.Length2D());
     } else if (strafe->type == StrafingType::Turning && grounded) {
-        cosTheta = std::cos(velocity.Length2D() * velocity.Length2D() - std::pow(playerFriction * tau * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * playerFriction * tau * M * A * lambda.Length2D());
+        cosTheta = std::cosf(velocity.Length2D() * velocity.Length2D() - std::powf(playerFriction * tau * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * playerFriction * tau * M * A * lambda.Length2D());
     } else {
         cosTheta = (L - playerFriction * tau * M * A) / lambda.Length2D();
     }

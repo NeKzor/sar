@@ -105,7 +105,7 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
 
 void Cheats::Init()
 {
-    if (sar.game->Is(SourceGame_Portal2Game)) {
+    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_StrataPortal2Game)) {
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         ui_loadingscreen_fadein_time = Variable("ui_loadingscreen_fadein_time");
@@ -117,10 +117,10 @@ void Cheats::Init()
         Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
     }
 
-    auto s3 = SourceGame_Portal2Game | SourceGame_Portal;
+    auto s3 = SourceGame_Portal2Game | SourceGame_Portal | SourceGame_PortalRevolution;
 
-    sar_jumpboost.UniqueFor(SourceGame_Portal2Engine);
-    sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
+    sar_jumpboost.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
+    sar_aircontrol.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
     //sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
     sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
@@ -133,14 +133,15 @@ void Cheats::Init()
     sar_speedrun_autostart.UniqueFor(s3);
     sar_speedrun_autostop.UniqueFor(s3);
     sar_speedrun_standard.UniqueFor(s3);
-    sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
+    sar_duckjump.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     //sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
     sar_speedrun_smartsplit.UniqueFor(s3);
-    sar_disable_no_focus_sleep.UniqueFor(SourceGame_Portal2Engine);
+    sar_disable_no_focus_sleep.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
+    sar_ei_hud.UniqueFor(SourceGame_Portal2Engine | SourceGame_HalfLife2Engine);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
@@ -163,16 +164,19 @@ void Cheats::Init()
     sar_togglewait.UniqueFor(SourceGame_Portal2Game | SourceGame_INFRA);
     sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
-    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
-    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
-    startautostrafe.UniqueFor(SourceGame_Portal2Engine);
-    endautostrafe.UniqueFor(SourceGame_Portal2Engine);
+    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
+    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
+    startautostrafe.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
+    endautostrafe.UniqueFor(SourceGame_Portal2Engine | SourceGame_StrataEngine);
     sar_dump_events.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 
     cvars->Unlock();
 
-    Variable::RegisterAll();
-    Command::RegisterAll();
+    auto variables = Variable::RegisterAll();
+    console->DevMsg("Registered %d variables.\n", variables);
+
+    auto commands = Command::RegisterAll();
+    console->DevMsg("Registered %d commands.\n", commands);
 }
 void Cheats::Shutdown()
 {

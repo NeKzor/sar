@@ -195,7 +195,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
         }
         file.close();
     } catch (const std::exception& ex) {
-        console->Warning("SAR: Error occurred when trying to parse the demo file.\n"
+        console->Warning("Error occurred when trying to parse the demo file.\n"
                          "If you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n"
                          "%s\n",
             std::string(ex.what()));

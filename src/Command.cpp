@@ -27,6 +27,7 @@ Command::~Command()
     }
 }
 Command::Command(const char* name)
+    : Command()
 {
     this->ptr = reinterpret_cast<ConCommand*>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), name));
     this->isReference = true;

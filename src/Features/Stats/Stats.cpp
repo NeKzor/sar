@@ -118,7 +118,7 @@ HUD_ELEMENT2(jumps, "0", "Draws total jump count.\n", HudType_InGame | HudType_P
     auto stat = stats->Get(ctx->slot);
     ctx->DrawElement("jumps: %i", stat->jumps->total);
 }
-HUD_ELEMENT3(portals, "0", "Draws total portal count.\n", HudType_InGame | HudType_Paused, true, SourceGame_Portal2Game | SourceGame_Portal)
+HUD_ELEMENT3(portals, "0", "Draws total portal count.\n", HudType_InGame | HudType_Paused, true, SourceGame_Portal2Game | SourceGame_Portal | SourceGame_StrataPortal2Game)
 {
     auto player = server->GetPlayer(ctx->slot + 1);
     if (player) {

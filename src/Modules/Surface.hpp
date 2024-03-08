@@ -18,15 +18,15 @@ public:
     using _DrawLine = int(__rescall*)(void* thisptr, int x0, int y0, int x1, int y1);
     using _DrawSetTextFont = int(__rescall*)(void* thisptr, HFont font);
     using _DrawSetTextColor = int(__rescall*)(void* thisptr, Color color);
-#ifdef _WIN32
+#if _WIN32 && !__x86_64
     using _GetFontTall = int(__stdcall*)(HFont font);
 #else
-    using _GetFontTall = int(__cdecl*)(void* thisptr, HFont font);
+    using _GetFontTall = int(__rescall*)(void* thisptr, HFont font);
 #endif
-    using _DrawColoredText = int(__cdecl*)(void* thisptr, HFont font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
-    using _DrawTextLen = int(__cdecl*)(void* thisptr, HFont font, char* fmt, ...);
+    using _DrawColoredText = int(__rescall*)(void* thisptr, HFont font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
+    using _DrawTextLen = int(__rescall*)(void* thisptr, HFont font, char* fmt, ...);
     using _StartDrawing = int(__rescall*)(void* thisptr);
-    using _FinishDrawing = int(__cdecl*)();
+    using _FinishDrawing = int(__rescall*)();
 
     _GetFontTall GetFontTall = nullptr;
     _DrawSetColor DrawSetColor = nullptr;

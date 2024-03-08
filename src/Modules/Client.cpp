@@ -75,7 +75,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
             if (tas->framesLeft <= 0) {
                 console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
 
-                if (sar.game->Is(SourceGame_Portal2Engine)) {
+                if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
                     if (engine->GetMaxClients() <= 1) {
                         engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
                     } else {
@@ -244,10 +244,10 @@ bool Client::Init()
         }
 
         auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
-        auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
+        auto g_InputAddr = *Memory::Read<void**>(IN_ActivateMouse + Offsets::g_Input);
 
         if (g_Input = Interface::Create(g_InputAddr)) {
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
+            if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
                 g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
                 g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 
@@ -274,10 +274,11 @@ bool Client::Init()
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
         void* clientMode2 = nullptr;
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
+        if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
             if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-                auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+                auto g_pClientMode = uintptr_t();
+                Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode, &g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);
                 clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
             } else {
@@ -286,7 +287,7 @@ bool Client::Init()
                 clientMode = GetClientMode();
             }
         } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
+            clientMode = *Memory::Deref<void**>(HudProcessInput + Offsets::GetClientMode);
         }
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
