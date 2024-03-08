@@ -72,17 +72,17 @@ bool Variable::GetBool()
 }
 int Variable::GetInt()
 {
-    return int(this->ptr->m_nValue ^ (uintptr_t)this->ptr->m_pParent);
+    return this->ptr->m_nValue ^ int(uintptr_t(this->ptr->m_pParent));
 }
 float Variable::GetFloat()
 {
     union {
         float m_fValue;
         int m_nValue;
-    } value;
+    } value = {};
 
     value.m_fValue = this->ptr->m_fValue;
-    value.m_nValue ^= (uintptr_t)this->ptr->m_pParent;
+    value.m_nValue ^= uintptr_t(this->ptr->m_pParent);
 
     return value.m_fValue;
 }
@@ -97,7 +97,8 @@ const int Variable::GetFlags()
 void Variable::SetValue(const char* value)
 {
 #if _WIN64
-    Memory::VMT<_InternalSetValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetValue)(this->ptr, value);
+    auto ptr = &this->ptr->ConVar_VTable;
+    Memory::VMT<_InternalSetValue>(ptr, Offsets::InternalSetValue)(ptr, value);
 #else
     Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(this->ptr, value);
 #endif
@@ -105,7 +106,8 @@ void Variable::SetValue(const char* value)
 void Variable::SetValue(float value)
 {
 #if _WIN64
-    Memory::VMT<_InternalSetFloatValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetFloatValue)(this->ptr->m_pParent, value);
+    auto ptr = &this->ptr->ConVar_VTable;
+    Memory::VMT<_InternalSetFloatValue>(ptr, Offsets::InternalSetFloatValue)(ptr, value);
 #else
     Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(this->ptr, value);
 #endif
@@ -113,7 +115,8 @@ void Variable::SetValue(float value)
 void Variable::SetValue(int value)
 {
 #if _WIN64
-    Memory::VMT<_InternalSetIntValue>(&this->ptr->ConVar_VTable, Offsets::InternalSetIntValue)(this->ptr->m_pParent, value);
+    auto ptr = &this->ptr->ConVar_VTable;
+    Memory::VMT<_InternalSetIntValue>(ptr, Offsets::InternalSetIntValue)(ptr, value);
 #else
     Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(this->ptr, value);
 #endif
