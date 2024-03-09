@@ -16,14 +16,6 @@ Variable sar_vphys_hud_precision("sar_vphys_hud_precision", "3", 1, 16, "Sets de
 Variable sar_vphys_hud_x("sar_vphys_hud_x", "0", 0, "The x position of the vphys HUD.\n");
 Variable sar_vphys_hud_y("sar_vphys_hud_y", "0", 0, "The y position of the vphys HUD.\n");
 
-Variable sar_vphys_hud_show_hitboxes("sar_vphys_hud_show_hitboxes", "2", 0, 3, 
-	"Sets visibility of hitboxes when vphys hud is active.\n"
-	"0 = hitboxes are not drawn\n"
-	"1 = only active vphys hitbox is drawn\n"
-	"2 = active vphys and player's bounding box are drawn\n"
-	"3 = both vphys hitboxes and player's bounding box are drawn\n"
-);
-
 VphysHud::VphysHud()
 	: Hud(HudType_InGame, true)
 {
