@@ -22,7 +22,7 @@ Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding bet
 Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
 Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 255", "RGBA button color of input HUD.\n", 0);
 Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
-Variable sar_ihud_font_index("sar_ihud_font_index", "10", 0, "Font index of input HUD.\n");
+Variable sar_ihud_font_index("sar_ihud_font_index", "6", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
                                                            "Labels are in this order:\n"
                                                            "forward,\n"

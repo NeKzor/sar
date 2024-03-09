@@ -17,7 +17,7 @@
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "1", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
-Variable sar_hud_default_font_index("sar_hud_default_font_index", "10", 0, "Font index of HUD.\n");
+Variable sar_hud_default_font_index("sar_hud_default_font_index", "6", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
 
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
