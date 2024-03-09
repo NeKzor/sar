@@ -12,9 +12,9 @@
 
 ### Windows
 
-* Go to the game's bin folder `bin\win64`
+* Go to the game's bin folder `Portal Revolution\bin\win64`
 * Rename `audio_minimp3.dll` to `audio_minimp3_original.dll` (this is required and does not count as a backup)
-* Extract downloaded files files into the folder which should overwrite the existing `audio_minimp3.dll`
+* Extract the downloaded files into the folder
 * Launch game, open developer console and test if SAR loaded
 
 ## Features
