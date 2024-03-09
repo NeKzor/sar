@@ -325,6 +325,12 @@
     <ClCompile Include="Features\Hud\VphysHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\ConfigPlus.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\Portal2CommunityEdition.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -677,6 +683,12 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\VphysHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ConfigPlus.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal2CommunityEdition.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

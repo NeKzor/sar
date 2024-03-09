@@ -19,6 +19,7 @@
 #include GAME(PortalStoriesMel)
 #include GAME(ThinkingWithTimeMachine)
 #include GAME(PortalRevolution)
+#include GAME(Portal2CommunityEdition)
 #ifdef _WIN32
 #include GAME(INFRA)
 #include GAME(HalfLife2Unpack)
@@ -119,6 +120,10 @@ Game* Game::CreateNew()
 
     if (Utils::ICompare(modDir, PortalRevolution::ModDir())) {
         return new PortalRevolution();
+    }
+
+    if (Utils::ICompare(modDir, Portal2CommunityEdition::ModDir())) {
+        return new Portal2CommunityEdition();
     }
 
     modDir = GetModDir(TARGET_MOD2);

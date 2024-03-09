@@ -126,6 +126,7 @@
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Config.cpp" />
+    <ClCompile Include="Features\ConfigPlus.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
@@ -213,6 +214,7 @@
     <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
     <ClCompile Include="Games\Windows\Portal.cpp" />
+    <ClCompile Include="Games\Windows\Portal2CommunityEdition.cpp" />
     <ClCompile Include="Games\Windows\PortalRevolution.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
     <ClCompile Include="Games\Windows\PortalUnpack.cpp" />
@@ -272,6 +274,7 @@
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Config.hpp" />
+    <ClInclude Include="Features\ConfigPlus.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
@@ -381,6 +384,7 @@
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
     <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
+    <ClInclude Include="Games\Windows\Portal2CommunityEdition.hpp" />
     <ClInclude Include="Games\Windows\PortalRevolution.hpp" />
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
     <ClInclude Include="Games\Windows\PortalUnpack.hpp" />
