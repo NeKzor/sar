@@ -35,6 +35,7 @@ void PortalRevolution::LoadOffsets()
     GetGameDirectory = 14; //x CEngineClient
     GetActiveSplitScreenPlayerSlot = 5; //x GetLocalClient
     //GetSteamAPIContext = 178; //unused CEngineClient
+    ExecuteClientCmd = 124; //x CEngineClient
     StringToButtonCode = 42; //x CInputSystem/unbind
     SleepUntilInput = 44; //x CInputSystem
     GetRecordingTick = 2; //x CDemoRecorder

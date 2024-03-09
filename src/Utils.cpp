@@ -17,4 +17,20 @@ bool Utils::ICompare(const std::string& a, const std::string& b)
     return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) {
         return std::tolower(a) == std::tolower(b);
     });
-};
+}
+const char *Utils::ArgContinuation(const CCommand &args, int from) {
+	const char *text;
+
+	if (args.ArgC() == from + 1) {
+		text = args[from];
+	} else {
+		text = args.m_pArgSBuffer + args.m_nArgv0Size;
+		if (from > 1) while (isspace(*text)) ++text;
+		for (int i = 1; i < from; i++) {
+			text += (*text == '"') * 2 + strlen(args[i]);
+			while (isspace(*text)) ++text;
+		}
+	}
+
+	return text;
+}

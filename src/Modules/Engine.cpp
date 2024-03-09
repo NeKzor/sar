@@ -44,7 +44,7 @@ REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 REDECL(Engine::ReadCustomData);
 #endif
 
-void Engine::ExecuteCommand(const char* cmd)
+void Engine::ExecuteCommand(const char* cmd, bool immediately)
 {
     this->SendToCommandBuffer(cmd, 0);
 }
@@ -253,6 +253,7 @@ bool Engine::Init()
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
         this->ClientCmd = this->engineClient->Original<_ClientCmd>(Offsets::ClientCmd);
+		this->ExecuteClientCmd = this->engineClient->Original<_ExecuteClientCmd>(Offsets::ExecuteClientCmd);
         this->GetLocalPlayer = this->engineClient->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         this->GetViewAngles = this->engineClient->Original<_GetViewAngles>(Offsets::GetViewAngles);
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);

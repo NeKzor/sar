@@ -97,6 +97,7 @@ struct Color {
 #define FCVAR_HIDDEN (1 << 4)
 #define FCVAR_NEVER_AS_STRING (1 << 12)
 #define FCVAR_CHEAT (1 << 14)
+#define FCVAR_DONTRECORD (1 << 17)
 #define FCVAR_CLIENTCMD_CAN_EXECUTE (1 << 30)
 
 #define COMMAND_COMPLETION_MAXITEMS 64

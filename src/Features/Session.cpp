@@ -1,6 +1,7 @@
 #include "Session.hpp"
 
 #include "Features/Hud/Hud.hpp"
+#include "Features/ConfigPlus.hpp"
 #include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
@@ -72,6 +73,8 @@ void Session::Start()
     this->Rebase(tick);
     timer->Rebase(tick);
     speedrun->Resume(tick);
+
+    ConfigPlus::ExecSessionStart();
 
 #ifndef _WIN32
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
@@ -173,6 +176,8 @@ void Session::Ended()
     replayPlayer2->StopPlaying();
     speedrun->Pause();
     speedrun->UnloadRules();
+
+    ConfigPlus::ExecSessionEnd();
 
     if (listener) {
         listener->Reset();
