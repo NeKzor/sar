@@ -29,6 +29,8 @@ PRINT=echo
 DELETE=rm -rf
 CREATE=mkdir -p
 
+-include config.mk
+
 all: pre sar post
 
 sar: $(OBJS)
