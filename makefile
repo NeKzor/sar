@@ -20,7 +20,7 @@ SRCS+=$(wildcard $(SDIR)Modules/*.cpp)
 SRCS+=$(wildcard $(SDIR)Utils/*.cpp)
 OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 
-CC=g++-11
+CXX=g++-11
 STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-attributes
 CFLAGS=-std=c++17 -m64 -fPIC -static-libstdc++ -shared -Wall -s $(STFU) -I$(SDIR)
 #CFLAGS+=-D _DEBUG
@@ -34,11 +34,11 @@ CREATE=mkdir -p
 all: pre sar post
 
 sar: $(OBJS)
-	@$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
+	@$(CXX) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
 
 $(ODIR)%.o: $(SDIR)%.cpp $(SDIR)%.hpp
 	@$(PRINT) $@
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
 	@$(DELETE) $(OBJS) $(BINARY)
