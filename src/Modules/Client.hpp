@@ -53,7 +53,11 @@ public:
     DECL_DETOUR_T(const char*, GetName);
 
     // CInput::_DecodeUserCmdFromBuffer
+#ifdef __x86_64
+    DECL_DETOUR_T(int64_t, DecodeUserCmdFromBuffer, int nSlot, void* buf, signed int sequence_number);
+#else
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);
+#endif
     DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number);
 
     // CInput::CreateMove

@@ -152,7 +152,11 @@ DETOUR_T(const char*, Client::GetName)
 }
 
 // CInput::DecodeUserCmdFromBuffer
+#ifdef __x86_64
+DETOUR_T(int64_t, Client::DecodeUserCmdFromBuffer, int nSlot, void* buf, signed int sequence_number)
+#else
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
+#endif
 {
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
 
