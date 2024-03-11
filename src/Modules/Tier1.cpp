@@ -8,8 +8,19 @@
 
 bool Tier1::Init()
 {
-    //this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x18DAE8));
+#if _WIN32
     this->g_pCVar = Interface::Create(this->Name(), "VEngineCvar0");
+#else
+    // Unfortunately s_pInterfaceRegs is not set in libvstdlib.so.
+    // Thanks P2:CE!
+    if (sar.game->Is(SourceGame_Portal2CommunityEdition)) {
+        this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x199B08));
+    } else if (sar.game->Is(SourceGame_PortalRevolution)) {
+        this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x18DAE8));
+    } else {
+        this->g_pCVar = Interface::Create(this->Name(), "VEngineCvar0");
+    }
+#endif
     if (this->g_pCVar) {
         this->RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
         this->UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
