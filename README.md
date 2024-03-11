@@ -17,6 +17,15 @@
 * Extract the downloaded files into the folder
 * Launch game, open developer console and test if SAR loaded
 
+### Linux
+
+* Go to the game's bin folder `Portal Revolution\bin\linux64`
+* Extract files
+* Load SAR with gdb:
+  * `sudo gdb`
+  * `source sar.py`
+  * `sar_load revolution`
+
 ## Features
 
 Partially ported from SAR 1.12.
