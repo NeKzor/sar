@@ -37,8 +37,8 @@ Partially ported from SAR 1.12.
   * `sar_vphys_hud_x`
   * `sar_vphys_hud_y`
   * `sar_vphys_setgravity`
-  * `sar_vphys_setangle`- NEW: Optional component argument.
-  * `sar_vphys_setspin`- NEW: Optional component argument.
+  * `sar_vphys_setangle` - NEW: Optional component argument.
+  * `sar_vphys_setspin` - NEW: Optional component argument.
   * `sar_vphys_setasleep`
 * Event commands
   * `sar_on_load`
@@ -50,14 +50,15 @@ Partially ported from SAR 1.12.
 
 ## Known Issues
 
+* Demo playback crashes
 * Autocomplete shows empty entries
-* Exit/quit has to be executed twice
 * Autostrafer is broken
 * Old speedrun timer requires rules
 * HUD uses old font system:
   * `sar_hud_default_font_index`
   * `sar_ihud_font_index`
   * `sar_vphys_hud_font`
+* `sar_exit` is required to exit the game
 
 ## License
 
