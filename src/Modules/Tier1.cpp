@@ -14,7 +14,7 @@ bool Tier1::Init()
     // Unfortunately s_pInterfaceRegs is not set in libvstdlib.so.
     // Thanks P2:CE!
     if (sar.game->Is(SourceGame_Portal2CommunityEdition)) {
-        this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x199B08));
+        this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0xCEAC8));
     } else if (sar.game->Is(SourceGame_PortalRevolution)) {
         this->g_pCVar = Interface::Create(Memory::Absolute<void*>(this->Name(), 0x18DAE8));
     } else {

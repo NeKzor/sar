@@ -18,24 +18,24 @@ void Portal2CommunityEdition::LoadOffsets()
     InternalSetFloatValue = 18; // ConVar
     InternalSetIntValue = 19; // ConVar
     Create = 24; // ConVar
-    GetScreenSize = 42; // TODO: CEngineClient
-    ClientCmd = 44; // TODO: CEngineClient
-    GetClientStateFunction = 11; // TODO: CEngineClient::ClientCmd
-    Cbuf_AddText = 42; // TODO: CEngineClient::ClientCmd
-    s_CommandBuffer = 95; // TODO: Cbuf_AddText
-    CCommandBufferSize = 8304; // TODO: Cbuf_AddText
-    //m_bWaitEnabled = 8265; // TODO:unused CCommandBuffer::AddText
-    GetLocalPlayer = 47; // TODO: CEngineClient
-    GetViewAngles = 53; // TODO: CEngineClient
-    SetViewAngles = 54; // TODO: CEngineClient
-    GetLocalClient = 96; // TODO: CEngineClient::SetViewAngles
-    g_SplitScreenMgr = 12; // TODO: GetLocalClient
-    viewangles = 134824; // TODO: CEngineClient::SetViewAngles
-    GetMaxClients = 55; // TODO: CEngineClient
-    GetGameDirectory = 14; // TODO: CEngineClient
-    GetActiveSplitScreenPlayerSlot = 5; // TODO: GetLocalClient
+    GetScreenSize = 40; // CEngineClient
+    ClientCmd = 42; // CEngineClient
+    GetClientStateFunction = 11; // CEngineClient::ClientCmd
+    Cbuf_AddText = 46; // CEngineClient::ClientCmd
+    s_CommandBuffer = 95; // Cbuf_AddText
+    CCommandBufferSize = 8304; // Cbuf_AddText
+    //m_bWaitEnabled = 8265; // unused CCommandBuffer::AddText
+    GetLocalPlayer = 45; // CEngineClient
+    GetViewAngles = 51; // CEngineClient
+    SetViewAngles = 52; // CEngineClient
+    GetLocalClient = 98; // CEngineClient::SetViewAngles
+    g_SplitScreenMgr = 12; // GetLocalClient
+    viewangles = 134824; // CEngineClient::SetViewAngles
+    GetMaxClients = 53; // CEngineClient
+    GetGameDirectory = 12; // CEngineClient
+    GetActiveSplitScreenPlayerSlot = 5; // GetLocalClient
     //GetSteamAPIContext = 178; //unused CEngineClient
-    ExecuteClientCmd = 124; // TODO: CEngineClient
+    ExecuteClientCmd = 122; // CEngineClient
     StringToButtonCode = 42; // CInputSystem/unbind
     SleepUntilInput = 44; // CInputSystem
     GetRecordingTick = 2; // CDemoRecorder
@@ -111,7 +111,7 @@ void Portal2CommunityEdition::LoadOffsets()
     GetAllServerClasses = 10; // CServerGameDLL
     IsRestoring = 24; // CServerGameDLL
     Think = 30; // CServerGameDLL
-    UTIL_PlayerByIndex = 47; // CServerGameDLL::Think
+    UTIL_PlayerByIndex = 51; // CServerGameDLL::Think
     gpGlobals = 19; // UTIL_PlayerByIndex
     player = 8; // CPortalGameMovement::PlayerMove
     m_MoveType = 382; // CPortalGameMovement::PlayerMove
@@ -136,8 +136,8 @@ void Portal2CommunityEdition::LoadOffsets()
     EnableGravity = 14;
     Wake = 25;
     Sleep = 26;
-    m_pShadowStand = 4888; // TODO: CBasePlayer::InitVCollision/CBasePlayer::SetupVPhysicsShadow
-    m_pShadowCrouch = 4896; // TODO: CBasePlayer::InitVCollision/CBasePlayer::SetupVPhysicsShadow
+    m_pShadowStand = 4880; // CBasePlayer::InitVCollision/CBasePlayer::SetupVPhysicsShadow
+    m_pShadowCrouch = 4888; // CBasePlayer::InitVCollision/CBasePlayer::SetupVPhysicsShadow
 
     // client.so
 
@@ -180,7 +180,7 @@ void Portal2CommunityEdition::LoadOffsets()
 }
 const char* Portal2CommunityEdition::Version()
 {
-    return "Portal 2: Community Edition (TODO)";
+    return "Portal 2: Community Edition (9256)";
 }
 const float Portal2CommunityEdition::Tickrate()
 {

@@ -395,7 +395,7 @@ typedef enum {
 } HOSTSTATES;
 
 struct CHostState {
-#ifdef _WIN64
+#ifdef __x86_64
     void* vtable;
 #endif
     int m_currentState; // 0

@@ -180,7 +180,7 @@ void Portal2CommunityEdition::LoadOffsets()
 }
 const char* Portal2CommunityEdition::Version()
 {
-    return "Portal 2: Community Edition (TODO)";
+    return "Portal 2: Community Edition (9256)";
 }
 const float Portal2CommunityEdition::Tickrate()
 {
