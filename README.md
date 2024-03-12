@@ -5,7 +5,6 @@
 
 ## Supported Games
 
-* [Portal 2: Community Edition](https://portal2communityedition.com/)
 * [Portal: Revolution](https://www.portalrevolution.com)
 
 ## Installation
@@ -13,7 +12,7 @@
 ### Windows
 
 * Go to the game's bin folder `Portal Revolution\bin\win64`
-* Rename `audio_minimp3.dll` to `audio_minimp3_original.dll` (this is required and does not count as a backup)
+* Rename `scenefilecache.dll` to `scenefilecache_original.dll` (this is required and does not count as a backup)
 * Extract the downloaded files into the folder
 * Launch game, open developer console and test if SAR loaded
 
@@ -50,15 +49,14 @@ Partially ported from SAR 1.12.
 
 ## Known Issues
 
-* Demo playback crashes
-* Autocomplete shows empty entries
-* Autostrafer is broken
-* Old speedrun timer requires rules
+* `sar_exit` is required to exit the game
 * HUD uses old font system:
   * `sar_hud_default_font_index`
   * `sar_ihud_font_index`
   * `sar_vphys_hud_font`
-* `sar_exit` is required to exit the game
+* Autocomplete shows empty entries
+* Autostrafer is broken
+* Old speedrun timer requires rules
 
 ## License
 
