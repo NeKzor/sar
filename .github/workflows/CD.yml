@@ -21,7 +21,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sar-linux
-          path: sar.so
+          path: |
+            sar.so
+            sar.py
   build-win:
     name: Windows Build
     runs-on: windows-latest
@@ -44,14 +46,24 @@ jobs:
             bin/scenefilecache.dll
             bin/scenefilecache.pdb
   release:
-    name: Release  
+    name: Release
     runs-on: ubuntu-latest
     needs: [build-lin, build-win]
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+      - name: Create archives
+        run: |
+          7z a sar-windows.zip sar-windows/*
+          7z a sar-linux.zip sar-linux/*
       - name: Create release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          name: SAR for Strata Source
+          body: |
+            [Read README for installation](https://github.com/NeKzor/sar/blob/${{ github.ref_name }}/README.md)
+            [Download for Windows](https://github.com/NeKzor/sar/releases/download/${{ github.ref_name }}/sar-windows.zip)
+            [Download for Linux](https://github.com/NeKzor/sar/releases/download/${{ github.ref_name }}/sar-linux.zip)
           files: |
-            sar-linux.zip
             sar-windows.zip
+            sar-linux.zip
