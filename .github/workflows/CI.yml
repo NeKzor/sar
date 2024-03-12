@@ -3,9 +3,11 @@ name: CI
 on:
   push:
     paths:
+      - 'proxy/**'
       - 'src/**'
   pull_request:
     paths:
+      - 'proxy/**'
       - 'src/**'
   workflow_dispatch:
 
@@ -18,7 +20,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: make
+      run: make -j$(nproc)
     - name: Create artifact
       uses: actions/upload-artifact@v4
       with:
@@ -44,5 +46,5 @@ jobs:
           path: |
             bin/sar.dll
             bin/sar.pdb
-            bin/audio_minimp3.dll
-            bin/audio_minimp3.pdb
+            bin/scenefilecache.dll
+            bin/scenefilecache.pdb
