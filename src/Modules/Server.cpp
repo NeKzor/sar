@@ -50,12 +50,6 @@ REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
 REDECL(Server::ProcessMovement);
-#ifdef _WIN32
-REDECL(Server::AirMove_Skip);
-REDECL(Server::AirMove_Continue);
-REDECL(Server::AirMove_Mid);
-REDECL(Server::AirMove_Mid_Trampoline);
-#endif
 
 MDECL(Server::GetPortals, int, iNumPortalsPlaced);
 MDECL(Server::GetAbsOrigin, Vector, S_m_vecAbsOrigin);
@@ -244,31 +238,6 @@ DETOUR_B(Server::AirMove)
 
     return Server::AirMove(thisptr);
 }
-#if _WIN32 && !__x86_64
-DETOUR_MID_MH(Server::AirMove_Mid)
-{
-    __asm {
-        pushad
-        pushfd
-    }
-
-    if (sar_aircontrol.GetBool() && server->AllowsMovementChanges())
-    {
-        __asm {
-            popfd
-            popad
-            jmp Server::AirMove_Skip
-        }
-    }
-
-    __asm {
-        popfd
-        popad
-        movss xmm2, dword ptr[eax + 0x40]
-        jmp Server::AirMove_Continue
-    }
-}
-#endif
 
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
@@ -432,9 +401,6 @@ bool Server::Init()
 }
 void Server::Shutdown()
 {
-#if _WIN32
-    MH_UNHOOK(this->AirMove_Mid);
-#endif
     Interface::Delete(this->g_GameMovement);
     Interface::Delete(this->g_ServerGameDLL);
 }

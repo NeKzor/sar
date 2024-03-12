@@ -36,12 +36,6 @@ REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
-REDECL(Engine::ParseSmoothingInfo_Skip);
-REDECL(Engine::ParseSmoothingInfo_Default);
-REDECL(Engine::ParseSmoothingInfo_Continue);
-REDECL(Engine::ParseSmoothingInfo_Mid);
-REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
-REDECL(Engine::ReadCustomData);
 #endif
 
 void Engine::ExecuteCommand(const char* cmd, bool immediately)
@@ -182,41 +176,6 @@ DETOUR(Engine::Frame)
 
     return Engine::Frame(thisptr);
 }
-
-#if _WIN32 && !__x86_64
-// CDemoFile::ReadCustomData
-void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
-{
-    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
-}
-// CDemoSmootherPanel::ParseSmoothingInfo
-DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
-{
-    __asm {
-        // Check if we have dem_customdata
-        cmp eax, 8
-        jne _orig
-
-            // Parse stuff that does not get parsed (thanks valve)
-        push edi
-        push edi
-        mov ecx, esi
-        call ReadCustomData_Wrapper
-
-        jmp Engine::ParseSmoothingInfo_Skip
-
-_orig:  // Original overwritten instructions
-        add eax, -3
-        cmp eax, 6
-        ja _def
-
-        jmp Engine::ParseSmoothingInfo_Continue
-
-_def:
-        jmp Engine::ParseSmoothingInfo_Default
-    }
-}
-#endif
 
 // CSteam3Client::OnGameOverlayActivated
 DETOUR_B(Engine::OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayActivated)
@@ -458,13 +417,6 @@ void Engine::Shutdown()
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);
-
-    MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);
-
-    if (this->demoSmootherPatch) {
-        this->demoSmootherPatch->Restore();
-    }
-    SAFE_DELETE(this->demoSmootherPatch)
 #endif
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
