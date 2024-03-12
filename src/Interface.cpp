@@ -101,7 +101,8 @@ void* Interface::GetPtr(const char* filename, const char* interfaceSymbol)
         return nullptr;
     }
 
-    auto s_pInterfaceRegsPtr = Memory::Read<InterfaceReg**>(CreateInterface + 3);
+    auto offset = *(uint8_t*)CreateInterface == 0x56 ? 10 : 3;
+    auto s_pInterfaceRegsPtr = Memory::Read<InterfaceReg**>(CreateInterface + offset);
 #else
     auto s_pInterfaceRegsPtr = Memory::GetSymbolAddress<InterfaceReg**>(handle, "s_pInterfaceRegs");
     Memory::CloseModuleHandle(handle);
