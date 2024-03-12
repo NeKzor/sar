@@ -44,7 +44,7 @@ void Portal2CommunityEdition::LoadOffsets()
     StopRecording = 9; // CDemoRecorder
     GetPlaybackTick = 4; // CDemoPlayer::SkipToTick
     //StartPlayback = 6; //unused CDemoPlayer
-    IsPlayingBack = 5; // DemoRecorder::SetSignonState
+    IsPlayingBack = 5; // CDemoRecorder::SetSignonState
     m_szFileName = 16; // CDemoPlayer::WriteTimeDemoResults
     m_szDemoBaseName = 1364; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1628; // CDemoRecorder::StartupDemoFile

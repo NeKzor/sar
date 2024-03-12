@@ -44,7 +44,7 @@ void PortalRevolution::LoadOffsets()
     StopRecording = 9; //x CDemoRecorder
     GetPlaybackTick = 3; //x CDemoPlayer::SkipToTick
     //StartPlayback = 6; //unused CDemoPlayer
-    IsPlayingBack = 5; //x DemoRecorder::SetSignonState
+    IsPlayingBack = 4; //x CDemoRecorder::SetSignonState
     m_szFileName = 16; //x CDemoPlayer::WriteTimeDemoResults
     m_szDemoBaseName = 1364; //x CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1628; //x CDemoRecorder::StartupDemoFile
