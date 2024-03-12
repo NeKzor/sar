@@ -15,11 +15,11 @@ SET "binary=%~1"
 SET "game_bin=%~2\bin\win64"
 
 REM Rename the original module so it still exists before overwriting it.
-IF NOT EXIST "%game_bin%\audio_minimp3_original.dll" (
-	REN "%game_bin%\audio_minimp3.dll" "audio_minimp3_original.dll"
+IF NOT EXIST "%game_bin%\scenefilecache_original.dll" (
+	REN "%game_bin%\scenefilecache.dll" "scenefilecache_original.dll"
 
 	IF errorlevel 1 (
-		ECHO "[-] Failed to rename original audio_minimp3.dll."
+		ECHO "[-] Failed to rename original scenefilecache.dll."
 		EXIT /b 1
 	)
 )

@@ -33,7 +33,7 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
         if (EnumProcessModules(pHandle, hMods, sizeof(hMods), &cbNeeded)) {
             for (unsigned i = 0; i < (cbNeeded / sizeof(HMODULE)); ++i) {
                 char buffer[MAX_PATH];
-                if (!GetModuleFileName(hMods[i], buffer, sizeof(buffer))) {
+                if (!GetModuleFileNameA(hMods[i], buffer, sizeof(buffer))) {
                     continue;
                 }
 
@@ -115,7 +115,7 @@ std::string Memory::GetProcessName()
 {
 #ifdef _WIN32
     char temp[MAX_PATH];
-    GetModuleFileName(NULL, temp, sizeof(temp));
+    GetModuleFileNameA(NULL, temp, sizeof(temp));
 #else
     char link[32];
     char temp[MAX_PATH] = { 0 };
