@@ -198,7 +198,7 @@ extern int cl;
 extern int demoplayer;
 extern int demorecorder;
 extern int sv;
-extern int m_szLevelName;
+extern int m_szMapname;
 extern int AirMove_Offset1;
 extern int AirMove_Offset2;
 extern int UTIL_PlayerByIndex;

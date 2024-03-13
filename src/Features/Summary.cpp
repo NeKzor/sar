@@ -51,7 +51,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 
     if (sar_sum_during_session.GetBool()) {
         auto tick = session->GetTick();
-        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        summary->Add(tick, engine->ToTime(tick), engine->m_szMapname);
     }
 
     summary->isRunning = false;
@@ -79,7 +79,7 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
     if (summary->isRunning) {
         auto tick = session->GetTick();
         auto time = engine->ToTime(tick);
-        console->PrintActive("%s -> ", *engine->m_szLevelName);
+        console->PrintActive("%s -> ", *engine->m_szMapname);
         console->PrintActive("%i ticks ", tick);
         console->PrintActive("(%.3f)\n", time);
         console->Print("---------------\n");

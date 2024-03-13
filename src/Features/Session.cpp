@@ -146,7 +146,7 @@ void Session::Ended()
     }
 
     if (summary->isRunning) {
-        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        summary->Add(tick, engine->ToTime(tick), engine->m_szMapname);
         console->Print("Total: %i (%.3f)\n", summary->totalTicks, engine->ToTime(summary->totalTicks));
     }
 

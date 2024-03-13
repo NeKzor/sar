@@ -61,7 +61,7 @@ void PortalRevolution::LoadOffsets()
     demorecorder = 110; //x CClientState::Disconnect
     GetCurrentMap = 23; //x CEngineTool
     //sv = 9; //unused CEngineTool::GetCurrentMap
-    m_szLevelName = 49; //x CEngineTool::GetCurrentMap/m_szMapname
+    m_szMapname = 49; //x CEngineTool::GetCurrentMap/m_szMapname
     AddListener = 3; //x CGameEventManager
     RemoveListener = 5; //x CGameEventManager
     //FireEventClientSide = 9; //unused CGameEventManager

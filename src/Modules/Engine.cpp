@@ -163,15 +163,15 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    speedrun->PreUpdate(engine->GetTick(), engine->m_szLevelName);
+    speedrun->PreUpdate(engine->GetTick(), engine->m_szMapname);
 
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
     session->prevState = engine->hoststate->m_currentState;
 
-    if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
-        speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
+    if (engine->hoststate->m_activeGame || std::strlen(engine->m_szMapname) == 0) {
+        speedrun->PostUpdate(engine->GetTick(), engine->m_szMapname);
     }
 
     return Engine::Frame(thisptr);
@@ -321,14 +321,14 @@ bool Engine::Init()
 
         if (sar.game->Is(SourceGame_StrataEngine) && IS_LINUX) {
             auto sv = Memory::Read<uintptr_t>(GetCurrentMap + Offsets::sv);
-            this->m_szLevelName = reinterpret_cast<char*>(sv + Offsets::m_szLevelName);
+            this->m_szMapname = reinterpret_cast<char*>(sv + Offsets::m_szMapname);
             this->m_bLoadgame = reinterpret_cast<bool*>(sv + Offsets::m_bLoadGame);
         } else {
-            Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName, &this->m_szLevelName);
-            this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
+            Memory::Deref<char*>(GetCurrentMap + Offsets::m_szMapname, &this->m_szMapname);
+            this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szMapname + Offsets::m_bLoadGame);
         }
 
-        if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
+        if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szMapname) != 0) {
             console->Warning("DO NOT load this plugin when the server is active!\n");
             return false;
         }
@@ -341,7 +341,7 @@ bool Engine::Init()
         auto engAddr = *Memory::Read<void**>(IsRunningSimulation + Offsets::eng);
 
         if (this->eng = Interface::Create(engAddr)) {
-            if (this->tickcount && this->hoststate && this->m_szLevelName) {
+            if (this->tickcount && this->hoststate && this->m_szMapname) {
                 this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
             }
         }

@@ -57,7 +57,7 @@ void Portal2::LoadOffsets()
     demoplayer = 74; // CClientState::Disconnect
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
-    m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    m_szMapname = 36; // CEngineTool::GetCurrentMap
     AddListener = 3; // CGameEventManager
     RemoveListener = 5; // CGameEventManager
     FireEventClientSide = 8; // CGameEventManager
@@ -68,7 +68,7 @@ void Portal2::LoadOffsets()
     IsRunningSimulation = 12; // CEngineAPI
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
-    m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
+    m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szMapname
     ScreenPosition = 12; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
     OnGameOverlayActivated = 144; // CSteam3Client

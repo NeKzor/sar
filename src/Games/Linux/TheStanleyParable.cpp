@@ -24,7 +24,7 @@ void TheStanleyParable::LoadOffsets()
     HostState_OnClientConnected = 1523; // CClientState::SetSignonState
     demoplayer = 92; // CClientState::Disconnect
     demorecorder = 105; // CClientState::Disconnect
-    m_szLevelName = 56; // CEngineTool::GetCurrentMap
+    m_szMapname = 56; // CEngineTool::GetCurrentMap
     Key_SetBinding = 59; // unbind
     net_time = 21; // CDemoRecorder::GetRecordingTick
 

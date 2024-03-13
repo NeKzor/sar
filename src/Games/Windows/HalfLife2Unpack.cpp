@@ -52,13 +52,13 @@ void HalfLife2Unpack::LoadOffsets()
     demoplayer = 54; // CClientState::Disconnect
     demorecorder = 67; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
-    m_szLevelName = 34; // CEngineTool::GetCurrentMap
+    m_szMapname = 34; // CEngineTool::GetCurrentMap
     AutoCompletionFunc = 65; // listdemo_CompletionFunc
     Key_SetBinding = 127; // unbind
     IsRunningSimulation = 9; // CEngineAPI
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
-    m_bLoadGame = 320; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
+    m_bLoadGame = 320; // CGameClient::ActivatePlayer/CBaseServer::m_szMapname
     ScreenPosition = 10; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 1; // maxplayers
 

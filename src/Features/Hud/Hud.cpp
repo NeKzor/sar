@@ -28,7 +28,7 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
-    if (engine->m_szLevelName[0] == '\0') {
+    if (engine->m_szMapname[0] == '\0') {
         return this->type & HudType_Menu;
     }
 

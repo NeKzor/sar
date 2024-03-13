@@ -61,7 +61,7 @@ void Portal2CommunityEdition::LoadOffsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
     sv = 9; // CEngineTool::GetCurrentMap
-    m_szLevelName = 20; // CEngineTool::GetCurrentMap/m_szMapname
+    m_szMapname = 20; // CEngineTool::GetCurrentMap/m_szMapname
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
     FireEventClientSide = 10; // CGameEventManager

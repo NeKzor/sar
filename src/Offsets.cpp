@@ -198,7 +198,7 @@ int cl;
 int demoplayer;
 int demorecorder;
 int sv;
-int m_szLevelName;
+int m_szMapname;
 int AirMove_Offset1;
 int AirMove_Offset2;
 int UTIL_PlayerByIndex;

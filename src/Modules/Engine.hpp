@@ -83,7 +83,7 @@ public:
     int* tickcount = nullptr;
     double* net_time = nullptr;
     float* interval_per_tick = nullptr;
-    char* m_szLevelName = nullptr;
+    char* m_szMapname = nullptr;
     bool* m_bLoadgame = nullptr;
     CHostState* hoststate = nullptr;
     void* s_CommandBuffer = nullptr;

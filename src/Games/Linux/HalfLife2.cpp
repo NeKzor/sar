@@ -52,7 +52,7 @@ void HalfLife2::LoadOffsets()
     demoplayer = 151; // CClientState::Disconnect
     demorecorder = 164; // CClientState::Disconnect
     GetCurrentMap = 24; // CEngineTool
-    m_szLevelName = 25; // CEngineTool::GetCurrentMap
+    m_szMapname = 25; // CEngineTool::GetCurrentMap
     //AddListener = 4; // CGameEventManager
     //RemoveListener = 6; // CGameEventManager
     //FireEventClientSide = 9; // CGameEventManager
@@ -63,7 +63,7 @@ void HalfLife2::LoadOffsets()
     IsRunningSimulation = 9; // CEngineAPI
     eng = 7; // CEngineAPI::IsRunningSimulation
     Frame = 6; // CEngine
-    m_bLoadGame = 328; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
+    m_bLoadGame = 328; // CGameClient::ActivatePlayer/CBaseServer::m_szMapname
     ScreenPosition = 9; // CIVDebugOverlay
     m_pConCommandList = 44; // CCvar
     IsCommand = 2; // ConCommandBase

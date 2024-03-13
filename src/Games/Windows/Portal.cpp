@@ -23,7 +23,7 @@ void Portal::LoadOffsets()
     HostState_OnClientConnected = 570; // CClientState::SetSignonState
     demoplayer = 115; // CClientState::Disconnect
     demorecorder = 128; // CClientState::Disconnect
-    m_szLevelName = 34; // CEngineTool::GetCurrentMap
+    m_szMapname = 34; // CEngineTool::GetCurrentMap
     //FireEventIntern = 12; // CGameEventManager::FireEventClientSide
     //ConPrintEvent = 262; // CGameEventManager::FireEventIntern
     AutoCompletionFunc = 66; // listdemo_CompletionFunc
