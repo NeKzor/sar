@@ -72,7 +72,7 @@ void Portal2CommunityEdition::LoadOffsets()
     IsRunningSimulation = 17; //x CEngineAPI
     eng = 7; //x CEngineAPI::IsRunningSimulation
     Frame = 5; //x CEngine
-    m_bLoadGame = -12; //x CEngineTool::GetCurrentMap/m_szMapname
+    m_bLoadGame = 996; //x CGameClient::ActivatePlayer/CBaseServer::m_szMapname
     //ScreenPosition = 11; //unused CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; //x maxplayers
     //OnGameOverlayActivated = 152; //unused CSteam3Client
