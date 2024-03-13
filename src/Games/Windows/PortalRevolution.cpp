@@ -38,10 +38,10 @@ void PortalRevolution::LoadOffsets()
     ExecuteClientCmd = 124; //x CEngineClient
     StringToButtonCode = 42; //x CInputSystem/unbind
     SleepUntilInput = 44; //x CInputSystem
-    GetRecordingTick = 2; //x CDemoRecorder
-    net_time = 57; //x CDemoRecorder::GetRecordingTick
+    GetRecordingTick = 12; //x CDemoRecorder
+    net_time = 27; //x CDemoRecorder::GetRecordingTick
     SetSignonState = 0; //x CDemoRecorder
-    StopRecording = 9; //x CDemoRecorder
+    StopRecording = 10; //x CDemoRecorder
     GetPlaybackTick = 3; //x CDemoPlayer::SkipToTick
     //StartPlayback = 6; //unused CDemoPlayer
     IsPlayingBack = 4; //x CDemoRecorder::SetSignonState

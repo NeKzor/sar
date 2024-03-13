@@ -38,10 +38,10 @@ void Portal2CommunityEdition::LoadOffsets()
     ExecuteClientCmd = 127; // CEngineClient
     StringToButtonCode = 42; // CInputSystem/unbind
     SleepUntilInput = 44; // CInputSystem
-    GetRecordingTick = 2; // CDemoRecorder
-    net_time = 57; // CDemoRecorder::GetRecordingTick
-    SetSignonState = 0; // CDemoRecorder
-    StopRecording = 9; // CDemoRecorder
+    GetRecordingTick = 12; //x CDemoRecorder
+    net_time = 26; //x CDemoRecorder::GetRecordingTick
+    SetSignonState = 0; //x CDemoRecorder
+    StopRecording = 10; //x CDemoRecorder
     GetPlaybackTick = 3; // CDemoPlayer::SkipToTick
     //StartPlayback = 6; //unused CDemoPlayer
     IsPlayingBack = 4; // CDemoRecorder::SetSignonState
