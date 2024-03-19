@@ -51,7 +51,6 @@ Partially ported from SAR 1.12.
 
 ## Known Issues
 
-* `sar_exit` is required to exit the game
 * HUD uses old font system:
   * `sar_hud_default_font_index`
   * `sar_ihud_font_index`
