@@ -41,6 +41,9 @@ REDECL(Engine::connect_callback);
 void Engine::ExecuteCommand(const char* cmd, bool immediately)
 {
     this->SendToCommandBuffer(cmd, 0);
+    if (immediately) {
+		this->ExecuteClientCmd(this->engineClient->ThisPtr(), "");
+    }
 }
 int Engine::GetTick() const
 {
@@ -100,7 +103,11 @@ void Engine::SendToCommandBuffer(const char* text, int delay)
 #else
         auto slot = this->GetActiveSplitScreenPlayerSlot(nullptr);
 #endif
+#ifdef __x86_64
+        this->Cbuf_AddText(slot, text, 0, delay);
+#else
         this->Cbuf_AddText(slot, text, delay);
+#endif
     } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
         this->AddText(this->s_CommandBuffer, text, delay);
     }
@@ -302,14 +309,14 @@ bool Engine::Init()
                 }
 
                 auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
-                Memory::Deref<CHostState*>(SetSignonState + Offsets::hoststate, &hoststate);
+                this->hoststate = *Memory::Read<CHostState**>(SetSignonState + Offsets::hoststate);
             } else {
                 Memory::Deref<int*>(ProcessTick + Offsets::tickcount, &this->tickcount);
                 Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick, &this->interval_per_tick);
 
                 auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
                 auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
-                Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
+                Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &this->hoststate);
             }
 
             speedrun->SetIntervalPerTick(this->interval_per_tick);

@@ -77,7 +77,11 @@ DETOUR(Client::HudUpdate, unsigned int a2)
 
                 if (sar.game->Is(SourceGame_Portal2Engine | SourceGame_StrataEngine)) {
                     if (engine->GetMaxClients() <= 1) {
-                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+#ifdef __x86_64
+                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0, 0);
+#else
+                        this->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), delay);
+#endif
                     } else {
                         auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
                         if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {

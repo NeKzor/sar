@@ -398,19 +398,26 @@ struct CHostState {
 #ifdef __x86_64
     void* vtable;
 #endif
-    int m_currentState; // 0
-    int m_nextState; // 4
-    Vector m_vecLocation; // 8, 12, 16
-    QAngle m_angLocation; // 20, 24, 28
-    char m_levelName[256]; // 32
-    char m_landmarkName[256]; // 288
-    char m_saveName[256]; // 544
-    float m_flShortFrameTime; // 800
-    bool m_activeGame; // 804
-    bool m_bRememberLocation; // 805
-    bool m_bBackgroundLevel; // 806
-    bool m_bWaitingForConnection; // 807
+    int m_currentState;
+    int m_nextState;
+    Vector m_vecLocation;
+    QAngle m_angLocation;
+    char m_levelName[256];
+#ifdef __x86_64
+    char m_mapGroupName[256];
+#endif
+    char m_landmarkName[256];
+    char m_saveName[256];
+    float m_flShortFrameTime;
+    bool m_activeGame;
+    bool m_bRememberLocation;
+    bool m_bBackgroundLevel;
+    bool m_bWaitingForConnection;
 };
+
+#ifdef __x86_64
+static_assert(offsetof(CHostState, m_activeGame) == 1068, "Expected m_activeGame at offset 1068");
+#endif
 
 #define INTERFACEVERSION_ISERVERPLUGINCALLBACKS "ISERVERPLUGINCALLBACKS002"
 

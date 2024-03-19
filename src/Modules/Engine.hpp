@@ -31,7 +31,11 @@ public:
     using _GetGameDirectory = char*(__cdecl*)();
     using _AddListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
     using _RemoveListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener);
+#ifdef __x86_64
+    using _Cbuf_AddText = void(__rescall*)(int eTarget, const char *pText, int cmdSource, int nTickDelay);
+#else
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
+#endif
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
 #ifdef __x86_64

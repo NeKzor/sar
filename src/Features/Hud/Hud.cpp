@@ -28,9 +28,13 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
-    if (engine->m_szMapname[0] == '\0') {
-        return this->type & HudType_Menu;
-    }
+    if (engine->demoplayer->IsPlaying()) {
+		return this->type & HudType_InGame;
+	}
+
+	if (!engine->hoststate->m_activeGame) {
+		return this->type & HudType_Menu;
+	}
 
     if (pauseTimer->IsActive()) {
         return this->type & HudType_Paused;

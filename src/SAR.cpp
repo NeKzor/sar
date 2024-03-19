@@ -241,7 +241,7 @@ auto sar_shutdown() -> void
 }
 #endif
 
-CON_COMMAND_F(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
+CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
     sar.Unload();
 #if _WIN64
