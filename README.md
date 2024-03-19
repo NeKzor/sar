@@ -46,6 +46,8 @@ Partially ported from SAR 1.12.
   * `sar_on_session_end`
   * `sar_on_session_end_clear`
   * `sar_on_session_end_list`
+* Others
+  * `sar_give_fly`
 
 ## Known Issues
 
@@ -56,7 +58,7 @@ Partially ported from SAR 1.12.
   * `sar_vphys_hud_font`
 * Autocomplete shows empty entries
 * Autostrafer is broken
-* Old speedrun timer requires rules
+* Old speedrun timer requires timing rules
 
 ## License
 
