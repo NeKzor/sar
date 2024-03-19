@@ -102,6 +102,16 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
         console->Print("Unable to find Cmd_Shutdown() function!\n");
     }
 }
+CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.\n") {
+	if (args.ArgC() > 2) return console->Print(sar_give_fly.ThisPtr()->m_pszHelpString);
+	if (!sv_cheats.GetBool()) return console->Print("sar_give_fly requires sv_cheats.\n");
+	auto slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
+	auto player = uintptr_t(server->GetPlayer(slot + 1));
+	if (player) {
+		*reinterpret_cast<float*>(player + Offsets::m_flGravity) = FLT_MIN;
+		console->Print("Gave fly to player %d\n", slot);
+	}
+}
 
 void Cheats::Init()
 {
