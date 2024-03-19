@@ -1,5 +1,6 @@
 #include "Cheats.hpp"
 
+#include <cfloat>
 #include <cstring>
 
 #include "Features/Cvars.hpp"
