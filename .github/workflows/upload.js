@@ -34,7 +34,7 @@ module.exports = async ({ release, context, core }) => {
 
   core.debug(JSON.stringify([...body.entries()]));
 
-  const res = await fetch("https://dl.sar.portal2.sr/api/v1/upload", {
+  const res = await fetch("https://dl.sar.portal2.jonesy.moe/api/v1/upload", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.DL_SAR_API_TOKEN}`,
