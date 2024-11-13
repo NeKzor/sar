@@ -36,7 +36,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/workflows/canary.js');
-            return await script({ github, context, core });
+            console.log(await script({ release: true, context, core }));
   build-win:
     name: Windows Build
     runs-on: windows-2019
@@ -74,7 +74,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/workflows/canary.js');
-            return await script({ github, context, core });
+            console.log(await script({ release: true, context, core }));
   release:
     name: Release
     if: github.repository == 'p2sr/SourceAutoRecord'

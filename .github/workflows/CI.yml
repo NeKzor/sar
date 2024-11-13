@@ -47,7 +47,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/workflows/canary.js');
-            console.log(await script({ github, context, core }));
+            console.log(await script({ release: false, context, core }));
 
   build-win:
     name: Windows Build
@@ -81,4 +81,4 @@ jobs:
         with:
           script: |
             const script = require('./.github/workflows/canary.js');
-            console.log(await script({ github, context, core }));
+            console.log(await script({ release: false, context, core }));
