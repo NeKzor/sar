@@ -13,7 +13,7 @@ module.exports = async ({ release, context, core }) => {
     return git.stderr.toString("utf-8");
   }
 
-  const SAR_VERSION = git.stdout.toString("utf-8");
+  const SAR_VERSION = git.stdout.toString("utf-8").trim();
 
   core.info(`Uploading ${release ? 'release' : 'canary'} version ${SAR_VERSION}`);
 
@@ -38,7 +38,6 @@ module.exports = async ({ release, context, core }) => {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.DL_SAR_API_TOKEN}`,
-      "Content-Type": "multipart/form-data",
     },
     body,
   });
